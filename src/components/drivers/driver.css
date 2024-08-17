@@ -1,0 +1,30 @@
+
+.driver-list{
+    padding-left: 20px;
+}
+.driver-main-content{
+    margin-left: 200px;
+}
+.drivers-table{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 30px;
+}
+table{
+    user-select: none;
+    width: 80%;
+    font-size: 13px;
+}
+
+thead{
+    background: pink;
+    color: white;
+}
+thead tr th{
+    padding: 19px;
+    width: 20px;
+}
+table tr{
+    white-space: nowrap;
+}

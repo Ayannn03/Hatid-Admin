@@ -1,0 +1,90 @@
+
+  .employee-main-content{
+    width: 100%;
+    margin-left: 100px;
+  }
+  .employee-table {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: calc(100% - 200px);
+    margin: 0 auto;
+  }
+  
+  .container {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  
+  .employee{
+    user-select: none;
+    width: 95%;
+    font-size: 15px;
+    border-collapse: collapse;
+    margin-top: 20PX;
+    
+  }
+
+  .employee-container {
+    background:pink;
+    color: white;
+  }
+  
+  .employee-container tr th {
+    padding: 19px;
+  }
+  
+  tbody {
+    font-size: 13px;
+  }
+  
+  .employee tr {
+    white-space: nowrap;
+    transition: .23s ease-in-out;
+  }
+  
+  td {
+    text-align: center;
+  }
+  
+  .edit-button, .delete-button, .view-button, .save-button, .cancel-button {
+    margin: 0 5px;
+    padding: 5px 10px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  
+  .edit-button {
+    background-color: #4CAF50; /* Green */
+    color: white;
+    border: none;
+    border-radius: 3px;
+  }
+  
+  .delete-button {
+    background-color: #f44336; /* Red */
+    color: white;
+    border: none;
+    border-radius: 3px;
+  }
+ 
+  .view-button {
+    background-color: #008CBA; /* Blue */
+    color: white;
+    border: none;
+    border-radius: 3px;
+  }
+  
+  .save-button {
+    background-color: #4CAF50; /* Green */
+    color: white;
+    border: none;
+    border-radius: 3px;
+  }
+  
+  .cancel-button {
+    background-color: #f44336; /* Red */
+    color: white;
+    border: none;
+    border-radius: 3px;
+  }
