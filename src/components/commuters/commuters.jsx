@@ -10,12 +10,6 @@ const Commuters = () => {
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
   const [nameSearch, setNameSearch] = useState('');
-  const [editItemId, setEditItemId] = useState(null);
-  const [editFormData, setEditFormData] = useState({
-    name: '',
-    email: '',
-    phone: ''
-  });
   const [showModal, setShowModal] = useState(false);
   const [profileData, setProfileData] = useState(null);
 
@@ -33,46 +27,6 @@ const Commuters = () => {
       console.error("Error fetching data:", error);
       setError("Error fetching data");
     }
-  };
-
-  const handleEdit = (id) => {
-    const itemToEdit = data.find((item) => item.id === id);
-    setEditItemId(id);
-    setEditFormData({
-      name: itemToEdit.name,
-      email: itemToEdit.email,
-      phone: itemToEdit.phone,
-      vehicle: itemToEdit.vehicle
-    });
-  };
-
-  const handleSave = async (id) => {
-    const updateUrl = `${API_URL}/${id}`;
-    try {
-      await axios.put(updateUrl, editFormData);
-      const updatedData = data.map((item) =>
-        item.id === id ? { ...item, ...editFormData } : item
-      );
-      setData(updatedData);
-      setEditItemId(null);
-      setEditFormData({
-        name: '',
-        email: '',
-        phone: ''
-      });
-    } catch (error) {
-      console.error("Error updating data:", error);
-      setError("Error updating data");
-    }
-  };
-
-  const handleCancel = () => {
-    setEditItemId(null);
-    setEditFormData({
-      name: '',
-      email: '',
-      phone: ''
-    });
   };
 
   const handleDelete = async (id) => {
@@ -111,7 +65,9 @@ const Commuters = () => {
             <p><strong>ID:</strong> {profileData.id}</p>
             <p><strong>Name:</strong> {profileData.name}</p>
             <p><strong>Email:</strong> {profileData.email}</p>
-            <p><strong>Phone:</strong> {profileData.phone}</p>
+            <p><strong>Phone:</strong> {profileData.number}</p>
+            <p><strong>Address:</strong> {profileData.address}</p>
+            <p><strong>Birthday:</strong> {profileData.birthday}</p>
           </div>
         </div>
       )}
@@ -137,6 +93,7 @@ const Commuters = () => {
               <th>Name</th>
               <th>Email</th>
               <th>Phone</th>
+              <th>Address</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -145,58 +102,15 @@ const Commuters = () => {
               <tr key={item._id}>
                 <td><input type="checkbox" /></td>
                 <td>{item.id}</td>
+                <td>{item.name}</td>
+                <td>{item.email}</td>
+                <td>{item.number}</td>
+                <td>{item.address}</td>
                 <td>
-                  {editItemId === item.id ? (
-                    <input
-                      type="text"
-                      value={editFormData.name}
-                      onChange={(e) =>
-                        setEditFormData({ ...editFormData, name: e.target.value })
-                      }
-                    />
-                  ) : (
-                    item.name
-                  )}
-                </td>
-                <td>
-                  {editItemId === item.id ? (
-                    <input
-                      type="text"
-                      value={editFormData.email}
-                      onChange={(e) =>
-                        setEditFormData({ ...editFormData, email: e.target.value })
-                      }
-                    />
-                  ) : (
-                    item.email
-                  )}
-                </td>
-                <td>
-                  {editItemId === item.id ? (
-                    <input
-                      type="text"
-                      value={editFormData.phone}
-                      onChange={(e) =>
-                        setEditFormData({ ...editFormData, phone: e.target.value })
-                      }
-                    />
-                  ) : (
-                    item.phone
-                  )}
-                </td>
-                <td>
-                  {editItemId === item.id ? (
-                    <>
-                      <button className="save-button" onClick={() => handleSave(item.id)}>Save</button>
-                      <button className="cancel-button" onClick={handleCancel}>Cancel</button>
-                    </>
-                  ) : (
-                    <>
-                      <button className="edit-button" onClick={() => handleEdit(item.id)}>Edit</button>
-                      <button className="delete-button" onClick={() => handleDelete(item.id)}>Block</button>
-                      <button className="view-button" onClick={() => handleViewProfile(item.id)}>View Profile</button>
-                    </>
-                  )}
+                  <>
+                    <button className="delete-button" onClick={() => handleDelete(item.id)}>Block</button>
+                    <button className="view-button" onClick={() => handleViewProfile(item.id)}>View Profile</button>
+                  </>
                 </td>
               </tr>
             ))}
