@@ -22,11 +22,11 @@ const Driver = () => {
 
   const fetchData = async () => {
     try {
-      // Fetch driver data
+    
       const driverResponse = await axios.get(DRIVER_API_URL);
       const violationResponse = await axios.get(VIOLATION_API_URL);
       
-      // Combine driver data with violations
+      
       const dataWithViolations = driverResponse.data.map((driver, index) => {
         const driverViolations = violationResponse.data.filter(
           (violation) => violation.driver === driver._id
@@ -34,7 +34,7 @@ const Driver = () => {
         return {
           ...driver,
           id: index + 1,
-          vehicleInfo: driver.vehicleInfo2, // Adjust as needed
+          vehicleInfo: driver.vehicleInfo2, 
           violations: driverViolations
         };
       });
