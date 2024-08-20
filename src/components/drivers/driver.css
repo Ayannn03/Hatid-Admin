@@ -64,48 +64,79 @@ table tr{
   
   
   .driver-modal {
+    background: white;
+    width: 800px;
+    padding: 20px;
     border-radius: 8px;
-    background-color: whitesmoke;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+  }
+  
+  .driver-modal-content {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
-    position: absolute;
-    width: 60%;
-    height: 100%;
-    z-index: 9999;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+  }
+  
+  .profile-title {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .profile-container {
+    display: flex;
+  }
+  
+  .profile-image {
+    margin-right: 20px;
+    text-align: center;
+  }
+  
+  .profile-image img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+  }
+  
+  .profile-details {
+    flex: 1;
+  }
+  
+  .profile-details p {
+    margin: 5px 0;
+  }
+  
+  .close-button {
+    margin-top: 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .close-button:hover {
+    background-color: #0056b3;
   }
   
   .driver-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); 
-    backdrop-filter: blur(5px); 
-    z-index: 9998; 
-  }
-  
-  .driver-modal-content {
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
     display: flex;
-    flex-direction: column;
-    width: 80%;
-    height: 100%;
+    justify-content: center;
+    align-items: center;
   }
   
   .close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
     cursor: pointer;
-    align-self: flex-end;
-    margin-right: 10px;
-    font-size: 54px;
+    font-size: 20px;
   }
   
-  p{
-    background-color:green;
-    padding: 15px;
-    margin-bottom: -5px;
-    border-radius: 5px;
-  }
