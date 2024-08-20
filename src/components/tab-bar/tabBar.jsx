@@ -28,13 +28,23 @@ const TabBar = () => {
           </Link>
         </li>
         <li className="nav-item">
-          <Link to="/blocklist" className="nav-link">
-            <BsPeopleFill className='icon' /> Blocklist
+          <Link to="/subscription" className="nav-link">
+            <BsCurrencyDollar className='icon' /> Subscription
           </Link>
         </li>
         <li className="nav-item">
-          <Link to="/subscription" className="nav-link">
-            <BsCurrencyDollar className='icon' /> Subscription
+          <Link to="/ratings" className="nav-link">
+            <BsPeopleFill className='icon' /> Ratings
+          </Link>
+        </li>
+        <li className="nav-item">
+          <Link to="/violations" className="nav-link">
+            <BsPeopleFill className='icon' /> Violations
+          </Link>
+        </li>
+        <li className="nav-item">
+          <Link to="/blocklist" className="nav-link">
+            <BsPeopleFill className='icon' /> Blocklist
           </Link>
         </li>
       </ul>
