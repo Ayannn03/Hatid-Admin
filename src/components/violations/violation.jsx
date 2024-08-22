@@ -81,7 +81,6 @@ const violations = () => {
           <table className='driver'>
             <thead className='driver-container'>
               <tr className='driver-content'>
-                <th><MdCheckBox /></th>
                 <th>ID</th>
                 <th>Booking</th>
                 <th>Driver</th>
@@ -93,7 +92,6 @@ const violations = () => {
             <tbody>
               {filteredData.map((item) => (
                 <tr key={item._id}>
-                  <td><input type="checkbox" /></td>
                   <td>{item.id}</td>
                   <td>{item.booking}</td>
                   <td>{item.driver}</td>

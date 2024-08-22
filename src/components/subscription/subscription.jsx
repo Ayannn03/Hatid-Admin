@@ -78,7 +78,6 @@ const Subscription = () => {
         <table className='driver'>
           <thead className='driver-container'>
             <tr className='driver-content'>
-              <th><MdCheckBox /></th>
               <th>ID</th>
               <th>Driver</th>
               <th>Subscription Type</th>
@@ -88,7 +87,6 @@ const Subscription = () => {
           <tbody>
             {filteredData.map((item) => (
               <tr key={item._id}>
-                <td><input type="checkbox" /></td>
                 <td>{item.id}</td>
                 <td>{item.driver}</td>
                 <td>{item.subscriptionType}</td>

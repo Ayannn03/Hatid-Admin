@@ -55,21 +55,34 @@ const Commuters = () => {
 
   return (
     <div className='commuters-main-content'>
-      {showModal && <div className="modal-overlay" onClick={() => setShowModal(false)}></div>}
-
-      {showModal && profileData && (
-        <div className="modal">
-          <div className="modal-content">
-            <span className="close" onClick={() => setShowModal(false)}>&times;</span>
-            <h2>Profile Details</h2>
-            <p><strong>ID:</strong> {profileData.id}</p>
-            <p><strong>Name:</strong> {profileData.name}</p>
-            <p><strong>Email:</strong> {profileData.email}</p>
-            <p><strong>Phone:</strong> {profileData.number}</p>
-            <p><strong>Address:</strong> {profileData.address}</p>
-            <p><strong>Birthday:</strong> {profileData.birthday}</p>
-          </div>
-        </div>
+      {showModal && (
+        <>
+          <div className="modal-overlay" onClick={() => setShowModal(false)}></div>
+          {profileData && (
+            <div className="modal">
+              <div className="modal-content">
+                <span className="close" onClick={() => setShowModal(false)}>&times;</span>
+                <h2 className="profile-title">User Profile</h2>
+                <div className="profile-container">
+                  <div className="profile-image">
+                    <img src="https://via.placeholder.com/150" alt="Profile" />
+                    <p><strong>Join Date:</strong> {profileData.joinDate}</p>
+                    <p><strong>Last Login:</strong> {profileData.lastLogin}</p>
+                    <p><strong>Violation:</strong> {profileData.violations?.length > 0 ? "Yes" : "No"}</p>
+                  </div>
+                  <div className="profile-details">
+                    <p><strong>ID:</strong> {profileData.id}</p>
+                    <p><strong>Name:</strong> {profileData.name}</p>
+                    <p><strong>Email:</strong> {profileData.email}</p>
+                    <p><strong>Phone:</strong> {profileData.number}</p>
+                    <p><strong>Address:</strong> {profileData.address}</p>
+                    <p><strong>Birthday:</strong> {profileData.birthday}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
       
       <div>
@@ -88,7 +101,6 @@ const Commuters = () => {
         <table>
           <thead>
             <tr>
-              <th><MdCheckBox /></th>
               <th>ID</th>
               <th>Name</th>
               <th>Email</th>
@@ -100,7 +112,6 @@ const Commuters = () => {
           <tbody>
             {filteredData.map((item) => (
               <tr key={item._id}>
-                <td><input type="checkbox" /></td>
                 <td>{item.id}</td>
                 <td>{item.name}</td>
                 <td>{item.email}</td>

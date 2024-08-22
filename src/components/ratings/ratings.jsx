@@ -19,7 +19,7 @@ const ratings = () => {
     const fetchData = async () => {
         try {
           const response = await axios.get(API_URL);
-          console.log(response.data); // Check the response
+          console.log(response.data); 
           const dataWithId = response.data.map((item, index) => ({ ...item, id: index + 1 }));
           setData(dataWithId);
           setError(null);
@@ -82,7 +82,6 @@ const ratings = () => {
           <table className='driver'>
             <thead className='driver-container'>
               <tr className='driver-content'>
-                <th><MdCheckBox /></th>
                 <th>ID</th>
                 <th>Booking</th>
                 <th>Driver</th>
@@ -95,7 +94,6 @@ const ratings = () => {
             <tbody>
               {filteredData.map((item) => (
                 <tr key={item._id}>
-                  <td><input type="checkbox" /></td>
                   <td>{item.id}</td>
                   <td>{item.booking}</td>
                   <td>{item.driver}</td>

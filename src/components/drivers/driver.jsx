@@ -5,20 +5,16 @@ import axios from 'axios';
 import moment from "moment";
 import './driver.css';
 
-const API_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/driver/';
+const DRIVER_API_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/driver/';
+const VIOLATION_API_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/violate/violation';
 
-const Driver = ({ setBlockedDrivers }) => {
+const Driver = () => {
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
   const [nameSearch, setNameSearch] = useState('');
-  const [editFormData, setEditFormData] = useState({
-    name: '',
-    email: '',
-  });
-
   const [showModal, setShowModal] = useState(false); 
   const [profileData, setProfileData] = useState(null);
-  
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,20 +23,30 @@ const Driver = ({ setBlockedDrivers }) => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(API_URL);
-      const dataWithId = response.data.map((item, index) => ({
-        ...item,
-        id: index + 1,
-        vehicleInfo: item.vehicleInfo2 // Map vehicle information to a key in the state
-      }));
-      setData(dataWithId);
+    
+      const driverResponse = await axios.get(DRIVER_API_URL);
+      const violationResponse = await axios.get(VIOLATION_API_URL);
+      
+      
+      const dataWithViolations = driverResponse.data.map((driver, index) => {
+        const driverViolations = violationResponse.data.filter(
+          (violation) => violation.driver === driver._id
+        );
+        return {
+          ...driver,
+          id: index + 1,
+          vehicleInfo: driver.vehicleInfo2, 
+          violations: driverViolations
+        };
+      });
+
+      setData(dataWithViolations);
       setError(null);
     } catch (error) {
       console.error("Error fetching data:", error);
       setError("Error fetching data");
     }
   };
-
 
   const handleViewProfile = (id) => {
     const itemToView = data.find((item) => item.id === id);
@@ -71,7 +77,7 @@ const Driver = ({ setBlockedDrivers }) => {
                   <p><strong>Email:</strong> {profileData.email}</p>
                   <p><strong>Phone:</strong> {profileData.number}</p>
                   <p><strong>Address:</strong> {profileData.address}</p>
-                  <p><strong>Birthday:</strong>{profileData?.birthday ? moment(profileData.birthday).format("MMMM DD, YYYY") : 'N/A'}</p>
+                  <p><strong>Birthday:</strong> {profileData.birthday}</p>
                   <p><strong>Vehicle Type:</strong> {profileData.vehicleInfo?.vehicleType}</p>
                   <p><strong>Model:</strong> {profileData.vehicleInfo?.model}</p>
                   <p><strong>Year:</strong> {profileData.vehicleInfo?.year}</p>
@@ -118,12 +124,10 @@ const Driver = ({ setBlockedDrivers }) => {
                 <td>{item.address}</td>
                 <td>{item.vehicleInfo?.vehicleType}</td>
                 <td>
-                  {(
-                    <>
-                      <button className="delete-button" >Block</button>
-                      <button className="view-button" onClick={() => handleViewProfile(item.id)}>View Profile</button>
-                    </>
-                  )}
+                  <>
+                    <button className="delete-button">Block</button>
+                    <button className="view-button" onClick={() => handleViewProfile(item.id)}>View Profile</button>
+                  </>
                 </td>
               </tr>
             ))}
