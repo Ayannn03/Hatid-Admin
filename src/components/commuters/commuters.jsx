@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import TabBar from '../tab-bar/tabBar';
 import { MdCheckBox } from 'react-icons/md';
 import axios from 'axios';
+import moment from "moment";
 import './commuters.css';
 
 const API_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/users';
@@ -66,17 +67,17 @@ const Commuters = () => {
                 <div className="profile-container">
                   <div className="profile-image">
                     <img src="https://via.placeholder.com/150" alt="Profile" />
-                    <p><strong>Join Date:</strong> {profileData.joinDate}</p>
+                    <p><strong>Join Date:</strong> {profileData.createdAt}</p>
                     <p><strong>Last Login:</strong> {profileData.lastLogin}</p>
                     <p><strong>Violation:</strong> {profileData.violations?.length > 0 ? "Yes" : "No"}</p>
                   </div>
-                  <div className="profile-details">
-                    <p><strong>ID:</strong> {profileData.id}</p>
+                  <div className="user-details">
+                    <p><strong>ID:</strong> {profileData._id}</p>
                     <p><strong>Name:</strong> {profileData.name}</p>
                     <p><strong>Email:</strong> {profileData.email}</p>
                     <p><strong>Phone:</strong> {profileData.number}</p>
                     <p><strong>Address:</strong> {profileData.address}</p>
-                    <p><strong>Birthday:</strong> {profileData.birthday}</p>
+                    <p><strong>Birthday:</strong> {profileData?.birthday ? moment(profileData.birthday).format("MMMM DD, YYYY") : 'N/A'}</p>
                   </div>
                 </div>
               </div>
@@ -86,7 +87,7 @@ const Commuters = () => {
       )}
       
       <div>
-        <h1>Passengers List</h1>
+        <h1>Commuters</h1>
       </div>
       <div className="search-bar-container">
         <input
