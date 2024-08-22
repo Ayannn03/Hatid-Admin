@@ -28,11 +28,6 @@ const TabBar = () => {
           </Link>
         </li>
         <li className="nav-item">
-          <Link to="/ratings" className="nav-link">
-            <BsPeopleFill className='icon' /> Ratings
-          </Link>
-        </li>
-        <li className="nav-item">
           <Link to="/violations" className="nav-link">
             <BsPeopleFill className='icon' /> Violations
           </Link>
