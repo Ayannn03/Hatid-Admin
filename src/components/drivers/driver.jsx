@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TabBar from '../tab-bar/tabBar';
 import axios from 'axios';
+import moment from "moment";
 import './driver.css';
 
 const API_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/driver/';
@@ -70,7 +71,7 @@ const Driver = ({ setBlockedDrivers }) => {
                   <p><strong>Email:</strong> {profileData.email}</p>
                   <p><strong>Phone:</strong> {profileData.number}</p>
                   <p><strong>Address:</strong> {profileData.address}</p>
-                  <p><strong>Birthday:</strong> {profileData.birthday}</p>
+                  <p><strong>Birthday:</strong>{profileData?.birthday ? moment(profileData.birthday).format("MMMM DD, YYYY") : 'N/A'}</p>
                   <p><strong>Vehicle Type:</strong> {profileData.vehicleInfo?.vehicleType}</p>
                   <p><strong>Model:</strong> {profileData.vehicleInfo?.model}</p>
                   <p><strong>Year:</strong> {profileData.vehicleInfo?.year}</p>

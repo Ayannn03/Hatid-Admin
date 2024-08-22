@@ -13,11 +13,6 @@ const TabBar = () => {
           </Link>
         </li>
         <li className='nav-item'>
-          <Link to="/employees" className='nav-link'>
-            <BsPeopleFill className='icon' /> EMPLOYEES
-          </Link>
-        </li>
-        <li className='nav-item'>
           <Link to="/commuters" className='nav-link'>
             <BsPeopleFill className='icon' /> COMMUTERS
           </Link>
