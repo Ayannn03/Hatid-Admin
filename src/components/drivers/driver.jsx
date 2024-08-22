@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TabBar from '../tab-bar/tabBar';
 import axios from 'axios';
+import moment from "moment";
 import './driver.css';
 
 const DRIVER_API_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/driver/';
@@ -70,30 +71,19 @@ const Driver = () => {
               <span className="close" onClick={() => setShowModal(false)}>&times;</span>
               {profileData && (
                 <>
-                  <h2 className="profile-title">User Profile</h2>
-                  <div className="profile-container">
-                    <div className="profile-image">
-                      <img src="https://via.placeholder.com/150" alt="Profile" />
-                      <p><strong>Join Date:</strong> </p>
-                      <p><strong>Last Login:</strong> </p>
-                      <p><strong>Violation:</strong> {profileData.violations}</p>
-                    </div>
-                    <div className="profile-details">
-                      <p><strong>ID:</strong> {profileData.id}</p>
-                      <p><strong>Name:</strong> {profileData.name}</p>
-                      <p><strong>Email:</strong> {profileData.email}</p>
-                      <p><strong>Phone:</strong> {profileData.number}</p>
-                      <p><strong>Address:</strong> {profileData.address}</p>
-                      <p><strong>Birthday:</strong> {profileData.birthday}</p>
-                      <p><strong>Vehicle Type:</strong> {profileData.vehicleInfo?.vehicleType}</p>
-                      <p><strong>Model:</strong> {profileData.vehicleInfo?.model}</p>
-                      <p><strong>Year:</strong> {profileData.vehicleInfo?.year}</p>
-                      <p><strong>Color:</strong> {profileData.vehicleInfo?.color}</p>
-                      <p><strong>Plate Number:</strong> {profileData.vehicleInfo?.plateNumber}</p>
-                      <p><strong>Capacity:</strong> {profileData.vehicleInfo?.capacity}</p>
-                    </div>
-                  </div>
-                  <button className="close-button" onClick={() => setShowModal(false)}>Close</button>
+                  <h2>Profile Details</h2>
+                  <p><strong>ID:</strong> {profileData.id}</p>
+                  <p><strong>Name:</strong> {profileData.name}</p>
+                  <p><strong>Email:</strong> {profileData.email}</p>
+                  <p><strong>Phone:</strong> {profileData.number}</p>
+                  <p><strong>Address:</strong> {profileData.address}</p>
+                  <p><strong>Birthday:</strong> {profileData.birthday}</p>
+                  <p><strong>Vehicle Type:</strong> {profileData.vehicleInfo?.vehicleType}</p>
+                  <p><strong>Model:</strong> {profileData.vehicleInfo?.model}</p>
+                  <p><strong>Year:</strong> {profileData.vehicleInfo?.year}</p>
+                  <p><strong>Color:</strong> {profileData.vehicleInfo?.color}</p>
+                  <p><strong>Plate Number:</strong> {profileData.vehicleInfo?.plateNumber}</p>
+                  <p><strong>Capacity:</strong> {profileData.vehicleInfo?.capacity}</p>
                 </>
               )}
             </div>
