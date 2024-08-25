@@ -1,53 +1,45 @@
-import React, { useState, useEffect } from 'react';
-import './dashboard.css';
-import TabBar from '../tab-bar/tabBar';
+import React, { useState, useEffect, useCallback, lazy, Suspense, useMemo } from 'react';
+import axios from 'axios';
 import { BsPeopleFill, BsCarFrontFill } from 'react-icons/bs';
-import { BarChart, Bar, Rectangle, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
+import './dashboard.css';
 
 const COMMUTERS_API_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/users';
 const DRIVERS_API_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/driver';
-const BOOKING_API_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/ride/booking'
+const BOOKING_API_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/ride/booking';
 
-function dashboard() {
+const TabBar = lazy(() => import('../tab-bar/tabBar'));
+
+function Dashboard() {
   const [commutersCount, setCommutersCount] = useState(0);
   const [driversCount, setDriversCount] = useState(0);
   const [bookingCount, setBookingCount] = useState(0);
 
-  useEffect(() => {
-    const fetchCommutersCount = async () => {
-      try {
-        const response = await fetch(COMMUTERS_API_URL);
-        const data = await response.json();
-        setCommutersCount(data.length);
-      } catch (error) {
-        console.error('Error fetching commuters count:', error);
-      }
-    };
-
-    const fetchDriversCount = async () => {
-      try {
-        const response = await fetch(DRIVERS_API_URL);
-        const data = await response.json();
-        setDriversCount(data.length);
-      } catch (error) {
-        console.error('Error fetching drivers count:', error);
-      }
-    };
-    const fetchBookingCount = async () => {
-      try {
-        const response = await fetch(BOOKING_API_URL);
-        const data = await response.json();
-        setBookingCount(data.length);
-      } catch (error) {
-        console.error('Error fetching drivers count:', error);
-      }
-    };
-
-    fetchCommutersCount();
-    fetchDriversCount();
-    fetchBookingCount();
+  const fetchData = useCallback(async () => {
+    try {
+      const [commutersResponse, driversResponse, bookingsResponse] = await Promise.all([
+        axios.get(COMMUTERS_API_URL),
+        axios.get(DRIVERS_API_URL),
+        axios.get(BOOKING_API_URL),
+      ]);
+      
+      setCommutersCount(commutersResponse.data.length);
+      setDriversCount(driversResponse.data.length);
+      setBookingCount(bookingsResponse.data.length);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
   }, []);
 
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const cardData = useMemo(() => [
+    { label: 'COMMUTERS', count: commutersCount, icon: <BsPeopleFill className='card_icon' /> },
+    { label: 'DRIVERS', count: driversCount, icon: <BsPeopleFill className='card_icon' /> },
+    { label: 'BOOKINGS', count: bookingCount, icon: <BsCarFrontFill className='card_icon' /> },
+    { label: 'TODAY REVENUE', count: 69, icon: null }
+  ], [commutersCount, driversCount, bookingCount]);
 
   return (
     <main className='main-container'>
@@ -56,44 +48,22 @@ function dashboard() {
       </div>
 
       <div className='main-cards'>
-        <div className='card'>
-          <div className='card-inner'>
-            <h3>COMMUTERS</h3>
-            <BsPeopleFill className='card_icon' />
+        {cardData.map((card, index) => (
+          <div className='card' key={index}>
+            <div className='card-inner'>
+              <h3>{card.label}</h3>
+              {card.icon}
+            </div>
+            <h1>{card.count}</h1>
           </div>
-          <h1>{commutersCount}</h1>
-        </div>
-
-        <div className='card'>
-          <div className='card-inner'>
-            <h3>DRIVER</h3>
-            <BsPeopleFill className='card_icon' />
-          </div>
-          <h1>{driversCount}</h1>
-        </div>
-
-        <div className='card'>
-          <div className='card-inner'>
-            <h3>BOOKINGS</h3>
-            <BsCarFrontFill className='card_icon' />
-          </div>
-          <h1>{bookingCount}</h1>
-        </div>
-
-        <div className='card'>
-          <div className='card-inner'>
-            <h3>TODAY REVENUE</h3>
-          </div>
-          <h1>69</h1>
-        </div>
+        ))}
       </div>
 
-
-
-
+      <Suspense fallback={<div>Loading...</div>}>
         <TabBar />
+      </Suspense>
     </main>
   );
 }
 
-export default dashboard;
+export default Dashboard;

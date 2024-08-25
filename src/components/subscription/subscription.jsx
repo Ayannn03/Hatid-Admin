@@ -53,7 +53,7 @@ const Subscription = () => {
                 <>
                   <h2>Profile Details</h2>
                   <p><strong>ID:</strong> {profileData._id}</p>
-                  <p><strong>Driver:</strong> {profileData.driver}</p>
+                  <p><strong>Driver:</strong> {profileData.name}</p>
                   <p><strong>Subscription Type:</strong> {profileData.subscriptionType}</p>
                 </>
               )}
