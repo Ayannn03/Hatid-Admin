@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import TabBar from '../tab-bar/tabBar';
 import axios from 'axios';
-import { MdCheckBox } from 'react-icons/md';
 
 
 const API_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/violate/violation';

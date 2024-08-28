@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import TabBar from '../tab-bar/tabBar';
-import { MdCheckBox } from 'react-icons/md';
 import axios from 'axios';
 import moment from "moment";
 import './commuters.css';
