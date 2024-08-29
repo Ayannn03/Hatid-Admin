@@ -121,7 +121,7 @@ const Driver = () => {
                   </div>
                   <div className="vehicleInfo">
                     <p><strong>Vehicle Information</strong></p>
-                    <p><strong>Vehicle Type:</strong> {profileData.vehicleInfo?.vehicleType}</p>
+                    <p><strong>Vehicle Type:</strong> {profileData.vehicleInfo?.vehicleType }</p>
                     <p><strong>Model:</strong> {profileData.vehicleInfo?.model}</p>
                     <p><strong>Year:</strong> {profileData.vehicleInfo?.year}</p>
                     <p><strong>Color:</strong> {profileData.vehicleInfo?.color}</p>
