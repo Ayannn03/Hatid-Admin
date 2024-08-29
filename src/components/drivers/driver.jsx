@@ -21,6 +21,7 @@ const Driver = () => {
   const [profileData, setProfileData] = useState(null);
   const [rating, setRating] = useState("0.0");
   const [violations, setViolations] = useState([]);
+  const [subscription, setSubscription] = useState(null);
 
   const navigate = useNavigate();
 
@@ -53,6 +54,23 @@ const Driver = () => {
     }
   }, []);
 
+
+  const fetchSubscriptionType = useCallback(async (driverId) => {
+    try {
+      const response = await axios.get(`https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/subs/subscription/type/${driverId}`);
+      
+     
+      const { subscriptionType } = response.data;
+      setSubscription(subscriptionType)
+      console.log('Subscription Type:', subscriptionType);
+
+    } catch (error) {
+      console.error('Error fetching subscription type:', error);
+    }
+  }, []);
+
+
+
   const fetchRating = useCallback(async (driverId) => {
     try {
       const res = await axios.get(`${RATING_API_URL}${driverId}`);
@@ -72,6 +90,7 @@ const Driver = () => {
     setShowModal(true);
     await fetchRating(itemToView._id);
     await fetchViolations(itemToView._id);
+    await fetchSubscriptionType(itemToView._id);
   };
 
   const handleViewViolations = () => {
@@ -109,6 +128,7 @@ const Driver = () => {
                   <p><strong>Last Login:</strong> {profileData.lastLogin}</p>
                   <li><strong><a href="#!" onClick={handleViewViolations}>Violations</a></strong></li>
                   <p>Ratings: {rating}</p>
+                  <p>Subscription Type: {subscription || "N/A"}</p>
                 </div>
                 <div className="profile-details">
                   <div>
