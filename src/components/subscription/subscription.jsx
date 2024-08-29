@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import TabBar from '../tab-bar/tabBar';
 import axios from 'axios';
+import moment from "moment";
 import { MdCheckBox } from 'react-icons/md';
 
 const API_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/subs/subscription';
@@ -28,15 +29,34 @@ const Subscription = () => {
     }
   };
 
-  const handleViewProfile = (id) => {
-    const itemToView = data.find((item) => item.id === id);
-    setProfileData(itemToView);
-    setShowModal(true);
-  };
-
   const handleSearch = (e) => {
     setNameSearch(e.target.value);
   };
+
+// Corrected handleAcceptPayment function and button
+const handleAcceptPayment = async (subscriptionId) => {
+  try {
+    if (!subscriptionId) {
+      throw new Error('SubscriptionId is required');
+    }
+
+    const response = await axios.post('https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/subs/payment-accept', 
+      { subscriptionId }
+    );
+    
+    if (response.status === 200) {
+      console.log('Subscription updated:', response.data);
+      // Optionally refresh the data after updating
+      fetchData();
+    } else {
+      console.error('Failed to update subscription:', response.data.message);
+    }
+  } catch (error) {
+    console.error('Error handling payment acceptance:', error);
+  }
+};
+
+  
 
   const filteredData = data.filter((item) =>
     item.driver.toLowerCase().includes(nameSearch.toLowerCase())
@@ -81,6 +101,10 @@ const Subscription = () => {
               <th>ID</th>
               <th>Driver</th>
               <th>Subscription Type</th>
+              <th>Vehicle Type</th>
+              <th>Start</th>
+              <th>End</th>
+              <th>Status</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -90,8 +114,14 @@ const Subscription = () => {
                 <td>{item.id}</td>
                 <td>{item.driver}</td>
                 <td>{item.subscriptionType}</td>
+                <td>{item.vehicleType}</td>
+                <td>{moment(item.startDate).format("MMMM DD, YYYY")}</td>
+                <td>{moment(item.endDate).format("MMMM DD, YYYY")}</td>
+                <td>{item.status}</td>
                 <td>
-                  <button className="view-button" onClick={() => handleViewProfile(item.id)}>View Profile</button>
+                  <button className="view-button" onClick={() => handleAcceptPayment(item._id)}>
+                    Accept Payment
+                  </button>
                 </td>
               </tr>
             ))}
