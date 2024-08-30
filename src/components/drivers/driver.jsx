@@ -169,6 +169,7 @@ const Driver = () => {
                       <th>Booking</th>
                       <th>User</th>
                       <th>Report</th>
+                      <th>Description</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -178,6 +179,7 @@ const Driver = () => {
                         <td>{violation.booking}</td>
                         <td>{violation.user?.name}</td>
                         <td>{violation.report}</td>
+                        <td>{violation.description}</td>
                       </tr>
                     ))}
                   </tbody>

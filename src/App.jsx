@@ -5,6 +5,7 @@ import Driver from './components/drivers/driver';
 import Commuters from './components/commuters/commuters';
 import Blocklist from './components/blocklist/blocklist';
 import Subscription from './components/subscription/subscription';
+import Violations from './components/violations/violations';
 
 
 const App = () => {
@@ -17,6 +18,7 @@ const App = () => {
         <Route path="/commuters" element={<Commuters />} />
         <Route path="/blocklist" element={<Blocklist  />} />
         <Route path="/subscription" element={<Subscription />} />
+        <Route path="/violations" element={<Violations />} />
       </Routes>
     </Router>
   );
