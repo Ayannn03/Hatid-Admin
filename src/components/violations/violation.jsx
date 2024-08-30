@@ -59,7 +59,7 @@ const Violations = () => {
             )}
 
             <div>
-                <h1 className='driver-list'>Violation List</h1>
+                <h1 className='driver-list'>Violation Lists</h1>
             </div>
             <div className='drivers-table'>
                 <table className='driver'>
