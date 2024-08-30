@@ -31,11 +31,6 @@ const Violations = () => {
         }
     };
 
-    // const handleRowClick = (violation) => {
-    //     setProfileData(violation);
-    //     setShowModal(true);
-    // };
-
     return (
         <div className='driver-main-content'>
             {showModal && (
