@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import  { useEffect, useState } from 'react';
 import axios from 'axios';
 import TabBar from '../tab-bar/TabBar';
 
@@ -8,7 +8,7 @@ const Violations = () => {
     const [data, setData] = useState([]);
     const [error, setError] = useState(null);
     const [showModal, setShowModal] = useState(false);
-    const [profileData, setProfileData] = useState(null);
+    const [profileData] = useState(null);
 
     useEffect(() => {
         fetchViolation();
