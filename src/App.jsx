@@ -5,7 +5,8 @@ import Driver from './components/drivers/driver';
 import Commuters from './components/commuters/commuters';
 import Blocklist from './components/blocklist/blocklist';
 import Subscription from './components/subscription/subscription';
-import Violations from './components/violations/violation';
+import Violations from './components/violations/violations';
+
 
 const App = () => {
 

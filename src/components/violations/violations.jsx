@@ -1,4 +1,4 @@
-import  { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import TabBar from '../tab-bar/TabBar';
 
@@ -8,7 +8,7 @@ const Violations = () => {
     const [data, setData] = useState([]);
     const [error, setError] = useState(null);
     const [showModal, setShowModal] = useState(false);
-    const [profileData] = useState(null);
+    const [profileData, setProfileData] = useState(null);
 
     useEffect(() => {
         fetchViolation();
@@ -20,7 +20,7 @@ const Violations = () => {
             console.log("Violation Data", res.data);
 
             if (res.data.status === "ok") {
-                setData(res.data.data || []); 
+                setData(res.data.data || []);
             } else {
                 console.error("Cannot find violation");
                 setError("No violations found.");
@@ -41,6 +41,7 @@ const Violations = () => {
                             {profileData && (
                                 <>
                                     <h2>Profile Details</h2>
+            
                                     <p><strong>Booking:</strong> {profileData.booking}</p>
                                     <p><strong>Driver:</strong> {profileData.driver.name}</p>
                                     <p><strong>User:</strong> {profileData.user.name}</p>
@@ -60,25 +61,24 @@ const Violations = () => {
                 <table className='driver'>
                     <thead className='driver-container'>
                         <tr className='driver-content'>
-              
+                        
                             <th>Booking</th>
                             <th>Driver</th>
                             <th>User</th>
                             <th>Report</th>
                             <th>Description</th>
-      
+                     
                         </tr>
                     </thead>
                     <tbody>
                         {data.map((violation) => (
                             <tr key={violation._id} className='driver-content'>
-                      
                                 <td>{violation.booking}</td>
                                 <td>{violation.driver.name}</td>
                                 <td>{violation.user.name}</td>
                                 <td>{violation.report}</td>
                                 <td>{violation.description || 'N/A'}</td>
-                               
+                            
                             </tr>
                         ))}
                     </tbody>
