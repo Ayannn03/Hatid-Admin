@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import TabBar from '../tab-bar/tabBar';
 import axios from 'axios';
 import moment from "moment";
 import "./subscription.css"
+import moment from 'moment';
+import TabBar from '../tab-bar/tabBar';
 
 const API_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/subs/subscription';
+const EXPIRE_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/subs/subscription/expire';
 
 const Subscription = () => {
   const [data, setData] = useState([]);
@@ -13,9 +15,6 @@ const Subscription = () => {
   const [showModal, setShowModal] = useState(false);
   const [profileData, setProfileData] = useState(null);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   const fetchData = async () => {
     try {
@@ -24,8 +23,57 @@ const Subscription = () => {
       setData(dataWithId);
       setError(null);
     } catch (error) {
-      console.error("Error fetching data:", error);
-      setError("Error fetching data");
+      console.error('Error fetching data:', error);
+      setError('Error fetching data');
+    }
+  };
+
+  const checkExpiredSubscriptions = async () => {
+    try {
+      await axios.post('https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/subs/subscription/expire');
+    } catch (error) {
+      console.error('Error checking expired subscriptions:', error);
+    }
+  };
+  useEffect(() => {
+  
+    const interval = setInterval(() => {
+      checkExpiredSubscriptions();
+    }, 300); 
+
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleAcceptPayment = async (subscriptionId) => {
+    try {
+      if (!subscriptionId) {
+        throw new Error('SubscriptionId is required');
+      }
+
+      const response = await axios.post('https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/subs/payment-accept', 
+        { subscriptionId }
+      );
+      
+      if (response.status === 200) {
+        console.log('Subscription updated:', response.data);
+        fetchData(); 
+      } else {
+        console.error('Failed to update subscription:', response.data.message);
+      }
+    } catch (error) {
+      console.error('Error handling payment acceptance:', error);
+    }
+  };
+
+
+  const updateExpiredSubscriptions = async () => {
+    try {
+      const response = await axios.post(EXPIRE_URL);
+      console.log(response.data.message);
+      fetchData(); 
+    } catch (error) {
+      console.error('Error updating expired subscriptions:', error);
     }
   };
 
@@ -33,34 +81,24 @@ const Subscription = () => {
     setNameSearch(e.target.value);
   };
 
-// Corrected handleAcceptPayment function and button
-const handleAcceptPayment = async (subscriptionId) => {
-  try {
-    if (!subscriptionId) {
-      throw new Error('SubscriptionId is required');
-    }
-
-    const response = await axios.post('https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/subs/payment-accept', 
-      { subscriptionId }
-    );
-    
-    if (response.status === 200) {
-      console.log('Subscription updated:', response.data);
-      // Optionally refresh the data after updating
-      fetchData();
-    } else {
-      console.error('Failed to update subscription:', response.data.message);
-    }
-  } catch (error) {
-    console.error('Error handling payment acceptance:', error);
-  }
-};
-
-  
-
   const filteredData = data.filter((item) =>
     item.driver.toLowerCase().includes(nameSearch.toLowerCase())
   );
+
+  useEffect(() => {
+ 
+    fetchData();
+    updateExpiredSubscriptions();
+
+    const dataIntervalId = setInterval(fetchData, 30000);
+    const expireIntervalId = setInterval(updateExpiredSubscriptions, 30000);
+
+
+    return () => {
+      clearInterval(dataIntervalId);
+      clearInterval(expireIntervalId);
+    };
+  }, []);
 
   return (
     <div className='driver-main-content'>
@@ -105,28 +143,37 @@ const handleAcceptPayment = async (subscriptionId) => {
               <th>Vehicle Type</th>
               <th>Start</th>
               <th>End</th>
+              <th>Price</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredData.map((item) => (
-              <tr key={item._id}>
-                <td>{item.id}</td>
-                <td>{item.driver}</td>
-                <td>{item.subscriptionType}</td>
-                <td>{item.vehicleType}</td>
-                <td>{moment(item.startDate).format("MMMM DD, YYYY")}</td>
-                <td>{moment(item.endDate).format("MMMM DD, YYYY")}</td>
-                <td>{item.status}</td>
-                <td>
-                  <button className="view-button" onClick={() => handleAcceptPayment(item._id)}>
-                    Accept Payment
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
+  {filteredData.map((item) => {
+    const isExpired = moment().isAfter(item.endDate);
+
+    return (
+      <tr key={item._id}>
+        <td>{item.id}</td>
+        <td>{item.driver}</td>
+        <td>{item.subscriptionType}</td>
+        <td>{item.vehicleType}</td>
+        <td>{moment(item.startDate).format("MMMM DD, YYYY")}</td>
+        <td>{moment(item.endDate).format("MMMM DD, YYYY")}</td>
+        <td>{item.price}</td>
+        <td>{isExpired ? 'Expired' : item.status}</td>
+        <td>
+          {!isExpired && (
+            <button className="view-button" onClick={() => handleAcceptPayment(item._id)}>
+              Accept Payment
+            </button>
+          )}
+        </td>
+      </tr>
+    );
+  })}
+</tbody>
+
         </table>
         {error && <div className="error-message">{error}</div>}
         <TabBar />

@@ -1,18 +1,43 @@
 import React, { useState, useEffect, useCallback, lazy, Suspense, useMemo } from 'react';
 import axios from 'axios';
-import { BsPeopleFill, BsCarFrontFill } from 'react-icons/bs';
+import { BsPeopleFill, BsCarFrontFill } from 'react-icons/bs'; // Example icons
 import './dashboard.css';
 
 const COMMUTERS_API_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/users';
 const DRIVERS_API_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/driver';
 const BOOKING_API_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/ride/booking';
+const SUBSCRIPTION_API_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/subs/subscription';
 
 const TabBar = lazy(() => import('../tab-bar/tabBar'));
 
 function Dashboard() {
+  const [subscriptions, setSubscriptions] = useState([]);
+  const [totalRevenue, setTotalRevenue] = useState(0);
   const [commutersCount, setCommutersCount] = useState(0);
   const [driversCount, setDriversCount] = useState(0);
   const [bookingCount, setBookingCount] = useState(0);
+
+  useEffect(() => {
+    const fetchSubscriptions = async () => {
+      try {
+        const response = await axios.get(SUBSCRIPTION_API_URL);
+        const subscriptionData = response.data;
+
+        setSubscriptions(subscriptionData);
+
+        // Calculate the total revenue from all subscriptions
+        const total = subscriptionData.reduce((sum, subscription) => {
+          return sum + (subscription.price || 0); // Default to 0 if price is undefined
+        }, 0);
+
+        setTotalRevenue(total);
+      } catch (error) {
+        console.error("Error fetching subscriptions:", error);
+      }
+    };
+
+    fetchSubscriptions();
+  }, []);
 
   const fetchData = useCallback(async () => {
     try {
@@ -21,7 +46,7 @@ function Dashboard() {
         axios.get(DRIVERS_API_URL),
         axios.get(BOOKING_API_URL),
       ]);
-      
+
       setCommutersCount(commutersResponse.data.length);
       setDriversCount(driversResponse.data.length);
       setBookingCount(bookingsResponse.data.length);
@@ -36,10 +61,10 @@ function Dashboard() {
 
   const cardData = useMemo(() => [
     { label: 'COMMUTERS', count: commutersCount, icon: <BsPeopleFill className='card_icon' /> },
-    { label: 'DRIVERS', count: driversCount, icon: <BsPeopleFill className='card_icon' /> },
-    { label: 'BOOKINGS', count: bookingCount, icon: <BsCarFrontFill className='card_icon' /> },
-    { label: 'TODAY REVENUE', count: 69, icon: null }
-  ], [commutersCount, driversCount, bookingCount]);
+    { label: 'DRIVERS', count: driversCount, icon: <BsCarFrontFill className='card_icon' /> },
+    { label: 'BOOKINGS', count: bookingCount, icon: <BsCarFrontFill className='card_icon' /> }, // Updated icon for bookings
+    { label: 'TOTAL REVENUE', count: totalRevenue, icon: null } // Displaying total revenue
+  ], [commutersCount, driversCount, bookingCount, totalRevenue]);
 
   return (
     <main className='main-container'>
