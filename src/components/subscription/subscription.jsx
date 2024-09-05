@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import TabBar from '../tab-bar/tabBar';
 import axios from 'axios';
 import moment from "moment";
-import { MdCheckBox } from 'react-icons/md';
+import "./subscription.css"
 
 const API_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/subs/subscription';
 
@@ -82,22 +82,23 @@ const handleAcceptPayment = async (subscriptionId) => {
         </div>
       )}
 
-      <div>
-        <h1 className='driver-list'>Subscription List</h1>
-      </div>
+      <div className="subscription-top-bar">
+        <h1 className="subcription-list">Subscription List</h1>
       <div className="search-bar-container">
         <input
           className="input-design"
           type="text"
-          placeholder="Search"
+          placeholder= "Search"
           value={nameSearch}
           onChange={handleSearch}
         />
       </div>
-      <div className='drivers-table'>
-        <table className='driver'>
-          <thead className='driver-container'>
-            <tr className='driver-content'>
+      </div>
+
+      <div className='subscriptions-table'>
+        <table >
+          <thead >
+            <tr >
               <th>ID</th>
               <th>Driver</th>
               <th>Subscription Type</th>

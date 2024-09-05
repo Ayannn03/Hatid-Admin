@@ -79,15 +79,17 @@ const Commuters = () => {
         </div>
       )}
 
-      <h1>Commuters</h1>
+      <div className="commuter-top-bar">
+        <h1 className="commuters-list">Commuters List</h1>
       <div className="search-bar-container">
         <input
           className="input-design"
           type="text"
-          placeholder="Search"
+          placeholder= "Search"
           value={nameSearch}
           onChange={handleSearch}
         />
+      </div>
       </div>
 
       {loading ? (

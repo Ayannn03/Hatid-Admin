@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import TabBar from "../tab-bar/tabBar";
 import axios from "axios";
 import moment from "moment";
+import { BsSearch } from "react-icons/bs";
 import "./driver.css";
 
 const DRIVER_API_URL =
@@ -117,7 +118,7 @@ const Driver = () => {
       {showModal && profileData && (
         <>
           <div className="modal-overlay" onClick={() => setShowModal(false)}></div>
-          <div className="modal">
+          <div className="driver-modal">
             <div className="modal-content">
               <span className="close" onClick={() => setShowModal(false)}>&times;</span>
               <h2 className="profile-title">Driver Profile</h2>
@@ -191,23 +192,22 @@ const Driver = () => {
           </div>
         </div>
       )}
-
-      <div>
+      <div className="top-bar">
         <h1 className="driver-list">Drivers List</h1>
-      </div>
       <div className="search-bar-container">
         <input
           className="input-design"
           type="text"
-          placeholder="Search"
+          placeholder= "Search"
           value={nameSearch}
           onChange={handleSearch}
         />
       </div>
+      </div>
       <div className="drivers-table">
-        <table className="driver">
-          <thead className="driver-container">
-            <tr className="driver-content">
+        <table >
+          <thead>
+            <tr>
               <th>ID</th>
               <th>Name</th>
               <th>Phone</th>
