@@ -43,8 +43,8 @@ const Violations = () => {
                                     <h2>Profile Details</h2>
             
                                     <p><strong>Booking:</strong> {profileData.booking}</p>
-                                    <p><strong>Driver:</strong> {profileData.driver.name}</p>
-                                    <p><strong>User:</strong> {profileData.user.name}</p>
+                                    <p><strong>Driver:</strong> {profileData.driver.name || 'N/A'}</p>
+                                    <p><strong>User:</strong> {profileData.user.name || 'N/A'}</p>
                                     <p><strong>Report:</strong> {profileData.report}</p>
                                     <p><strong>Description:</strong> {profileData.description || 'N/A'}</p>
                                 </>
