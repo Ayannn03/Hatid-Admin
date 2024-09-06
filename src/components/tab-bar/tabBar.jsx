@@ -11,7 +11,7 @@ import {
 const TabBar = () => {
   return (
     <div className="tabBar">
-
+      <div className="admin"><h2>Administrator</h2></div>
       <ul>
         <li className="nav-item">
           <Link to="/" className="nav-link">

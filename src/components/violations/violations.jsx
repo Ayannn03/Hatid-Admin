@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import TabBar from '../tab-bar/TabBar';
+import TabBar from '../tab-bar/tabBar';
+import "./violations.css"
 
 const API_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/violate/violation';
 
@@ -41,7 +42,6 @@ const Violations = () => {
                             {profileData && (
                                 <>
                                     <h2>Profile Details</h2>
-            
                                     <p><strong>Booking:</strong> {profileData.booking}</p>
                                     <p><strong>Driver:</strong> {profileData.driver.name || 'N/A'}</p>
                                     <p><strong>User:</strong> {profileData.user.name || 'N/A'}</p>
@@ -53,14 +53,13 @@ const Violations = () => {
                     </div>
                 </div>
             )}
-
-            <div>
-                <h1 className='driver-list'>Violation List</h1>
+            <div className="violation-top-bar">
+                <h1 className="violation-list">Violation List</h1>
             </div>
-            <div className='drivers-table'>
-                <table className='driver'>
-                    <thead className='driver-container'>
-                        <tr className='driver-content'>
+            <div className='violations-table'>
+                <table >
+                    <thead >
+                        <tr >
                         
                             <th>Booking</th>
                             <th>Driver</th>
@@ -72,7 +71,7 @@ const Violations = () => {
                     </thead>
                     <tbody>
                         {data.map((violation) => (
-                            <tr key={violation._id} className='driver-content'>
+                            <tr key={violation._id} className='violations-content'>
                                 <td>{violation.booking}</td>
                                 <td>{violation.driver.name}</td>
                                 <td>{violation.user.name}</td>
