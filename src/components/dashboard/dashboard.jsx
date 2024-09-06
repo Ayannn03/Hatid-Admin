@@ -1,14 +1,25 @@
-import React, { useState, useEffect, useCallback, lazy, Suspense, useMemo } from 'react';
-import axios from 'axios';
-import { BsPeopleFill, BsCarFrontFill } from 'react-icons/bs'; // Example icons
-import './dashboard.css';
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  lazy,
+  Suspense,
+  useMemo,
+} from "react";
+import axios from "axios";
+import { BsPeopleFill, BsCarFrontFill } from "react-icons/bs"; 
+import "./dashboard.css";
 
-const COMMUTERS_API_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/users';
-const DRIVERS_API_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/driver';
-const BOOKING_API_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/ride/booking';
-const SUBSCRIPTION_API_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/subs/subscription';
+const COMMUTERS_API_URL =
+  "https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/users";
+const DRIVERS_API_URL =
+  "https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/driver";
+const BOOKING_API_URL =
+  "https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/ride/booking";
+const SUBSCRIPTION_API_URL =
+  "https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/subs/subscription";
 
-const TabBar = lazy(() => import('../tab-bar/tabBar'));
+const TabBar = lazy(() => import("../tab-bar/tabBar"));
 
 function Dashboard() {
   const [subscriptions, setSubscriptions] = useState([]);
@@ -41,17 +52,18 @@ function Dashboard() {
 
   const fetchData = useCallback(async () => {
     try {
-      const [commutersResponse, driversResponse, bookingsResponse] = await Promise.all([
-        axios.get(COMMUTERS_API_URL),
-        axios.get(DRIVERS_API_URL),
-        axios.get(BOOKING_API_URL),
-      ]);
+      const [commutersResponse, driversResponse, bookingsResponse] =
+        await Promise.all([
+          axios.get(COMMUTERS_API_URL),
+          axios.get(DRIVERS_API_URL),
+          axios.get(BOOKING_API_URL),
+        ]);
 
       setCommutersCount(commutersResponse.data.length);
       setDriversCount(driversResponse.data.length);
       setBookingCount(bookingsResponse.data.length);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error("Error fetching data:", error);
     }
   }, []);
 
@@ -59,23 +71,38 @@ function Dashboard() {
     fetchData();
   }, [fetchData]);
 
-  const cardData = useMemo(() => [
-    { label: 'COMMUTERS', count: commutersCount, icon: <BsPeopleFill className='card_icon' /> },
-    { label: 'DRIVERS', count: driversCount, icon: <BsCarFrontFill className='card_icon' /> },
-    { label: 'BOOKINGS', count: bookingCount, icon: <BsCarFrontFill className='card_icon' /> }, // Updated icon for bookings
-    { label: 'TOTAL REVENUE', count: totalRevenue, icon: null } // Displaying total revenue
-  ], [commutersCount, driversCount, bookingCount, totalRevenue]);
+  const cardData = useMemo(
+    () => [
+      {
+        label: "COMMUTERS",
+        count: commutersCount,
+        icon: <BsPeopleFill className="card_icon" />,
+      },
+      {
+        label: "DRIVERS",
+        count: driversCount,
+        icon: <BsCarFrontFill className="card_icon" />,
+      },
+      {
+        label: "BOOKINGS",
+        count: bookingCount,
+        icon: <BsCarFrontFill className="card_icon" />,
+      }, // Updated icon for bookings
+      { label: "TOTAL REVENUE", count: totalRevenue, icon: null }, // Displaying total revenue
+    ],
+    [commutersCount, driversCount, bookingCount, totalRevenue]
+  );
 
   return (
-    <main className='main-container'>
-      <div className='main-title'>
+    <main className="main-container">
+      <div className="main-title">
         <h3>DASHBOARD</h3>
       </div>
 
-      <div className='main-cards'>
+      <div className="main-cards">
         {cardData.map((card, index) => (
-          <div className='card' key={index}>
-            <div className='card-inner'>
+          <div className="card" key={index}>
+            <div className="card-inner">
               <h3>{card.label}</h3>
               {card.icon}
             </div>
