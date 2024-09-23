@@ -6,6 +6,7 @@ import {
   BsPeopleFill,
   BsCurrencyDollar,
   BsCarFrontFill,
+  BsPaperclip,
 } from "react-icons/bs";
 
 const TabBar = () => {
@@ -16,6 +17,11 @@ const TabBar = () => {
         <li className="nav-item">
           <Link to="/" className="nav-link">
             <BsGrid1X2Fill className="icon" /> DASHBOARD
+          </Link>
+        </li>
+        <li className="nav-item">
+          <Link to="/applications" className="nav-link">
+            <BsPaperclip className="icon" /> Application
           </Link>
         </li>
         <li className="nav-item">

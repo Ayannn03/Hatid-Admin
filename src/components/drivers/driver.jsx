@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import TabBar from "../tab-bar/tabBar";
 import axios from "axios";
 import moment from "moment";
-import { BsSearch } from "react-icons/bs";
 import "./driver.css";
 
 const DRIVER_API_URL =
@@ -17,12 +16,17 @@ const Driver = () => {
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
   const [nameSearch, setNameSearch] = useState("");
+  const [vehicleSearch, setVehicleSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [showViolationModal, setShowViolationModal] = useState(false);
   const [profileData, setProfileData] = useState(null);
   const [rating, setRating] = useState("0.0");
   const [violations, setViolations] = useState([]);
   const [subscription, setSubscription] = useState(null);
+  const [sortValue, setSortValue] = useState("");
+
+
+  const sortOptions = ["Name", "Vehicle", "Address"];
 
   const navigate = useNavigate();
 
@@ -100,15 +104,40 @@ const Driver = () => {
     }
   };
 
+const handleSort = (e) => {
+  const value = e.target.value;
+  setSortValue(value);
+
+  const sortedData = [...data].sort((a, b) => {
+    if (value === "Name") {
+      return a.name.localeCompare(b.name);
+    } else if (value === "Vehicle") {
+      return a.vehicleInfo?.vehicleType.localeCompare(b.vehicleInfo?.vehicleType || "");
+    } else if (value === "Address") {
+      return a.address.localeCompare(b.address);
+    }
+    return 0;
+  });
+
+  setData(sortedData);
+};
+
+  
+
   const handleSearch = (e) => {
     setNameSearch(e.target.value);
+    setVehicleSearch (e.target.value);
   };
 
-  const filteredData = useMemo(() =>
-    data.filter((item) =>
-      item.name.toLowerCase().includes(nameSearch.toLowerCase())
-    ), [data, nameSearch]);
-
+  const filteredData = useMemo(() => {
+    return data.filter((item) => {
+      const nameMatch = item.name.toLowerCase().includes(nameSearch.toLowerCase());
+      const vehicleMatch = item.vehicleInfo?.vehicleType.toLowerCase().includes(vehicleSearch.toLowerCase());
+      const addressMatch = item.vehicleInfo?.vehicleType.toLowerCase().includes(vehicleSearch.toLowerCase());
+      return nameMatch || vehicleMatch; 
+    });
+  }, [data, nameSearch, vehicleSearch]);
+  
   useEffect(() => {
     fetchData();
   }, [fetchData]);
@@ -132,7 +161,8 @@ const Driver = () => {
                   <p>Subscription Type: {subscription || "N/A"}</p>
                 </div>
                 <div className="profile-details">
-                  <div>
+                  <div className="driverInfo">
+                    <p><strong>Driver Information</strong></p>
                     <p><strong>ID:</strong> {profileData._id}</p>
                     <p><strong>Name:</strong> {profileData.name}</p>
                     <p><strong>Email:</strong> {profileData.email}</p>
@@ -150,9 +180,9 @@ const Driver = () => {
                     <p><strong>Capacity:</strong> {profileData.vehicleInfo?.capacity}</p>
                   </div>
                 </div>
+                </div>
               </div>
             </div>
-          </div>
         </>
       )}
 
@@ -194,6 +224,16 @@ const Driver = () => {
       )}
       <div className="top-bar">
         <h1 className="driver-list">Drivers List</h1>
+        <div>
+          <select onChange={handleSort} value={sortValue}>
+            <option value="">Sort By:</option>
+            {sortOptions.map((item, index) => (
+              <option value={item} key={index}>
+                {item}
+              </option>
+            ))}
+          </select>
+        </div>
       <div className="search-bar-container">
         <input
           className="input-design"

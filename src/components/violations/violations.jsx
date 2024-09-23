@@ -1,92 +1,105 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import TabBar from '../tab-bar/tabBar';
-import "./violations.css"
+import "./violations.css";
 
 const API_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/violate/violation';
 
 const Violations = () => {
-    const [data, setData] = useState([]);
-    const [error, setError] = useState(null);
-    const [showModal, setShowModal] = useState(false);
-    const [profileData, setProfileData] = useState(null);
+  const [data, setData] = useState([]);
+  const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [profileData, setProfileData] = useState(null);
 
-    useEffect(() => {
-        fetchViolation();
-    }, []);
+  useEffect(() => {
+    fetchViolation();
+  }, []);
 
-    const fetchViolation = async () => {
-        try {
-            const res = await axios.get(API_URL);
-            console.log("Violation Data", res.data);
+  const fetchViolation = async () => {
+    try {
+      const res = await axios.get(API_URL);
+      console.log("Violation Data", res.data);
 
-            if (res.data.status === "ok") {
-                setData(res.data.data || []);
-            } else {
-                console.error("Cannot find violation");
-                setError("No violations found.");
-            }
-        } catch (error) {
-            console.error('Error fetching violations:', error);
-            setError("Error fetching data. Please try again later.");
-        }
-    };
+      if (res.data.status === "ok") {
+        setData(res.data.data || []);
+      } else {
+        console.error("Cannot find violation");
+        setError("No violations found.");
+      }
+    } catch (error) {
+      console.error('Error fetching violations:', error);
+      setError("Error fetching data. Please try again later.");
+    }
+  };
 
-    return (
-        <div className='driver-main-content'>
-            {showModal && (
-                <div className="modal-overlay" onClick={() => setShowModal(false)}>
-                    <div className="modal" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-content">
-                            <span className="close" onClick={() => setShowModal(false)}>&times;</span>
-                            {profileData && (
-                                <>
-                                    <h2>Profile Details</h2>
-                                    <p><strong>Booking:</strong> {profileData.booking}</p>
-                                    <p><strong>Driver:</strong> {profileData.driver.name || 'N/A'}</p>
-                                    <p><strong>User:</strong> {profileData.user.name || 'N/A'}</p>
-                                    <p><strong>Report:</strong> {profileData.report}</p>
-                                    <p><strong>Description:</strong> {profileData.description || 'N/A'}</p>
-                                </>
-                            )}
-                        </div>
-                    </div>
+  const handleViewProfile = async (id) => {
+    const itemToView = data.find((item) => item._id === id);
+    setProfileData(itemToView);
+    setShowModal(true);
+  };
+
+  return (
+    <div className='driver-main-content'>
+      {showModal && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-content">
+              <span className="close" onClick={() => setShowModal(false)}>&times;</span>
+              {profileData && (
+                <>
+                <div className='violation-details'>
+                <h2>Profile Details</h2>
+                  <p><strong>Driver:</strong> {profileData.driver?.name || 'N/A'}</p>
+                  <p><strong>Booking:</strong> {profileData.booking}</p>
+                  <p><strong>Passenger:</strong> {profileData.user?.name || 'N/A'}</p>
+                  <p><strong>Report:</strong> {profileData.report}</p>
+                  <p><strong>Description:</strong> {profileData.description || 'N/A'}</p>
                 </div>
-            )}
-            <div className="violation-top-bar">
-                <h1 className="violation-list">Violation List</h1>
+                 
+                </>
+              )}
             </div>
-            <div className='violations-table'>
-                <table >
-                    <thead >
-                        <tr >
-                        
-                            <th>Booking</th>
-                            <th>Driver</th>
-                            <th>User</th>
-                            <th>Report</th>
-                            <th>Description</th>
-                     
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {data.map((violation) => (
-                            <tr key={violation._id} className='violations-content'>
-                                <td>{violation.booking}</td>
-                                <td>{violation.driver.name}</td>
-                                <td>{violation.user.name}</td>
-                                <td>{violation.report}</td>
-                                <td>{violation.description || 'N/A'}</td>
-                            
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-                {error && <div className="error-message">{error}</div>}
-                <TabBar />
-            </div>
+          </div>
         </div>
-    );
+      )}
+      <div className="violation-top-bar">
+        <h1 className="violation-list">Violation List</h1>
+      </div>
+      <div className='violations-table'>
+        <table>
+          <thead>
+            <tr>
+              <th>Driver</th>
+              <th>Passenger</th>
+              <th>Report</th>
+              <th>Description</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((violation) => (
+              <tr key={violation._id} className='violations-content'>
+                <td>{violation.driver?.name}</td>
+                <td>{violation.user?.name}</td>
+                <td>{violation.report}</td>
+                <td>{violation.description || 'N/A'}</td>
+                <td>
+                  <button
+                    className="view-button"
+                    onClick={() => handleViewProfile(violation._id)}
+                  >
+                    View
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {error && <div className="error-message">{error}</div>}
+        <TabBar />
+      </div>
+    </div>
+  );
 };
 
 export default Violations;

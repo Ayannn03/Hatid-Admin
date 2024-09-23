@@ -13,7 +13,9 @@ const Commuters = () => {
   const [showModal, setShowModal] = useState(false);
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [sortValue, setSortValue] = useState("");
 
+  const sortOptions = ["Name", "Address"];
   useEffect(() => {
     fetchData();
   }, []);
@@ -46,6 +48,23 @@ const Commuters = () => {
   const filteredData = data.filter((item) =>
     item.name.toLowerCase().includes(nameSearch.toLowerCase())
   );
+
+  const handleSort = (e) => {
+    const value = e.target.value;
+    setSortValue(value);
+  
+    const sortedData = [...data].sort((a, b) => {
+      if (value === "Name") {
+        return a.name.localeCompare(b.name);
+      } else if (value === "Address") {
+        return a.address.localeCompare(b.address);
+      }
+      return 0;
+    });
+  
+    setData(sortedData);
+  };
+  
 
   return (
     <div className='commuters-main-content'>
@@ -81,6 +100,16 @@ const Commuters = () => {
 
       <div className="commuter-top-bar">
         <h1 className="commuters-list">Commuters List</h1>
+        <div>
+          <select onChange={handleSort} value={sortValue}>
+            <option value="">Sort By:</option>
+            {sortOptions.map((item, index) => (
+              <option value={item} key={index}>
+                {item}
+              </option>
+            ))}
+          </select>
+        </div>
       <div className="search-bar-container">
         <input
           className="input-design"
