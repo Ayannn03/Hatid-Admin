@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import TabBar from '../tab-bar/tabBar';
 import axios from 'axios';
 import moment from 'moment';
+import { IoSearch } from "react-icons/io5";
 import './commuters.css';
 
 const API_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/users';
@@ -80,7 +81,7 @@ const Commuters = () => {
             <h2 className="profile-title">User Profile</h2>
             <div className="profile-container">
               <div className="profile-image">
-                <img src="https://via.placeholder.com/150" alt="Profile" />
+                <img src="image.png" alt="Profile" />
                 <p><strong>Join Date:</strong> {profileData.createdAt ? moment(profileData.createdAt).format("MMMM DD, YYYY") : 'N/A'}</p>
                 <p><strong>Last Login:</strong> {profileData.lastLogin}</p>
                 <p><strong>Violation:</strong> {profileData.violations?.length > 0 ? "Yes" : "No"}</p>
@@ -100,7 +101,7 @@ const Commuters = () => {
 
       <div className="commuter-top-bar">
         <h1 className="commuters-list">Commuters List</h1>
-        <div>
+        <div className='sort-container'>
           <select onChange={handleSort} value={sortValue}>
             <option value="">Sort By:</option>
             {sortOptions.map((item, index) => (
@@ -111,6 +112,7 @@ const Commuters = () => {
           </select>
         </div>
       <div className="search-bar-container">
+      <IoSearch className="search-icon"/>
         <input
           className="input-design"
           type="text"

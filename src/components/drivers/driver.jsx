@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import TabBar from "../tab-bar/tabBar";
 import axios from "axios";
 import moment from "moment";
+import { IoSearch } from "react-icons/io5";
 import "./driver.css";
 
 const DRIVER_API_URL =
@@ -224,7 +225,7 @@ const handleSort = (e) => {
       )}
       <div className="top-bar">
         <h1 className="driver-list">Drivers List</h1>
-        <div>
+        <div className="sort-container">
           <select onChange={handleSort} value={sortValue}>
             <option value="">Sort By:</option>
             {sortOptions.map((item, index) => (
@@ -242,6 +243,7 @@ const handleSort = (e) => {
           value={nameSearch}
           onChange={handleSearch}
         />
+        <IoSearch className="search-icon"/>
       </div>
       </div>
       <div className="drivers-table">

@@ -144,8 +144,8 @@ const Subscription = () => {
           </tbody>
         </table>
         {error && <div className="error-message">{error}</div>}
-        <TabBar />
       </div>
+      <TabBar />
     </div>
   );
 };
