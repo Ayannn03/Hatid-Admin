@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo} from 'react';
 import TabBar from '../tab-bar/tabBar';
 import axios from 'axios';
 import moment from 'moment';
+import { TableContainer, Table, TableBody, TableCell, TableHead, TableRow, TablePagination, Button } from "@mui/material";
 import './subscription.css';
 
 const API_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/subs/subscription';
@@ -12,6 +13,8 @@ const Subscription = () => {
   const [nameSearch, setNameSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [profileData, setProfileData] = useState(null);
+  const [page, setPage] = useState(0); 
+  const [rowsPerPage, setRowsPerPage] = useState(10); 
 
   useEffect(() => {
     fetchData();
@@ -35,6 +38,9 @@ const Subscription = () => {
   const handleSearch = (e) => {
     setNameSearch(e.target.value);
   };
+
+
+  
 
   const handleAcceptPayment = async (subscriptionId) => {
     try {
@@ -61,7 +67,20 @@ const Subscription = () => {
 
   const filteredData = data.filter((item) =>
     item.driver.toLowerCase().includes(nameSearch.toLowerCase())
+
+
   );
+  const paginatedData = useMemo(() => {
+    return filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  }, [filteredData, page, rowsPerPage]);
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleRowsPerPageChange = (event) => {
+    setRowsPerPage(+event.target.value);
+    setPage(0);
+  };
 
   return (
     <div className="driver-main-content">
@@ -105,46 +124,68 @@ const Subscription = () => {
       </div>
 
       <div className="subscriptions-table">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Driver</th>
-              <th>Subscription Type</th>
-              <th>Vehicle Type</th>
-              <th>Start</th>
-              <th>End</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredData.map((item) => {
-              const isExpired = moment().isAfter(item.endDate);
+      <TableContainer
+        sx={{
+          maxHeight: 550,
+          marginLeft: 28,
+          maxWidth: "86%",
+          boxShadow: "0 2px 10px rgba(0, 0, 0, 0.5)",
+        }}
+      >
+        <Table sx={{ '& .MuiTableCell-root': { padding: '12px' } }}>
+          <TableHead>
+            <TableRow>
+              <TableCell>ID</TableCell>
+              <TableCell>Driver</TableCell>
+              <TableCell>Subscription Type</TableCell>
+              <TableCell>Vehicle Type</TableCell>
+              <TableCell>Start</TableCell>
+              <TableCell>End</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+  {paginatedData.map((item) => {
+    const isExpired = moment().isAfter(item.endDate);
+    return (
+      <TableRow key={item._id}>
+        <TableCell>{item.id}</TableCell>
+        <TableCell>{item.driver}</TableCell>
+        <TableCell>{item.subscriptionType}</TableCell>
+        <TableCell>{item.vehicleType}</TableCell>
+        <TableCell>{moment(item.startDate).format('MMMM DD, YYYY')}</TableCell>
+        <TableCell>{moment(item.endDate).format('MMMM DD, YYYY')}</TableCell>
+        <TableCell>{isExpired ? 'Expired' : item.status}</TableCell>
+        <TableCell>
+          {!isExpired && (
+            <Button className="view-button" onClick={() => handleAcceptPayment(item._id)}>
+              Accept Payment
+            </Button>
+          )}
+        </TableCell>
+      </TableRow>
+    );
+  })}
+</TableBody>
 
-              return (
-                <tr key={item._id}>
-                  <td>{item.id}</td>
-                  <td>{item.driver}</td>
-                  <td>{item.subscriptionType}</td>
-                  <td>{item.vehicleType}</td>
-                  <td>{moment(item.startDate).format('MMMM DD, YYYY')}</td>
-                  <td>{moment(item.endDate).format('MMMM DD, YYYY')}</td>
-                  <td>{isExpired ? 'Expired' : item.status}</td>
-                  <td>
-                    {!isExpired && (
-                      <button className="view-button" onClick={() => handleAcceptPayment(item._id)}>
-                        Accept Payment
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        {error && <div className="error-message">{error}</div>}
-      </div>
+        </Table>
+      </TableContainer>
+      
+  
+      <TablePagination
+        rowsPerPageOptions={[10, 20, 30]}
+        component="div"
+        count={filteredData.length}
+        page={page}
+        rowsPerPage={rowsPerPage}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleRowsPerPageChange}
+      />
+
+      
+      {error && <div className="error-message">{error}</div>}
+    </div>
       <TabBar />
     </div>
   );

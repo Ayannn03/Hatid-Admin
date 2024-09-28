@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import TabBar from '../tab-bar/tabBar';
 import "./violations.css";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 
 const API_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/violate/violation';
 
@@ -65,38 +66,46 @@ const Violations = () => {
       <div className="violation-top-bar">
         <h1 className="violation-list">Violation List</h1>
       </div>
-      <div className='violations-table'>
-        <table>
-          <thead>
-            <tr>
-              <th>Driver</th>
-              <th>Passenger</th>
-              <th>Report</th>
-              <th>Description</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
+          <div className='violations-table'>
+      <TableContainer
+        sx={{
+          maxHeight: 550,
+          marginLeft: 28,
+          maxWidth: "86%",
+          boxShadow: "0 2px 10px rgba(0, 0, 0, 0.5)",
+        }}>
+        <Table sx={{ '& .MuiTableCell-root': { padding: '12px' } }}>
+          <TableHead>
+            <TableRow>
+              <TableCell>Driver</TableCell>
+              <TableCell>Passenger</TableCell>
+              <TableCell>Report</TableCell>
+              <TableCell>Description</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
             {data.map((violation) => (
-              <tr key={violation._id} className='violations-content'>
-                <td>{violation.driver?.name}</td>
-                <td>{violation.user?.name}</td>
-                <td>{violation.report}</td>
-                <td>{violation.description || 'N/A'}</td>
-                <td>
+              <TableRow key={violation._id}> {/* Added key prop */}
+                <TableCell>{violation.driver?.name}</TableCell>
+                <TableCell>{violation.user?.name}</TableCell>
+                <TableCell>{violation.report}</TableCell>
+                <TableCell>{violation.description || 'N/A'}</TableCell>
+                <TableCell>
                   <button
                     className="view-button"
                     onClick={() => handleViewProfile(violation._id)}
                   >
                     View
                   </button>
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
-        {error && <div className="error-message">{error}</div>}
-      </div>
+          </TableBody>
+        </Table>
+      </TableContainer>
+      {error && <div className="error-message">{error}</div>}
+    </div>
       <TabBar />
     </div>
   );

@@ -4,7 +4,7 @@ import TabBar from "../tab-bar/tabBar";
 import axios from "axios";
 import moment from "moment";
 import { IoSearch } from "react-icons/io5";
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, MenuItem, TablePagination, Select, FormControl, InputLabel, Button } from "@mui/material";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow,  TablePagination,  } from "@mui/material";
 import "./blocklist.css";
 
 const DRIVER_API_URL =
@@ -26,19 +26,15 @@ const Blocklist = () => {
   const [violations, setViolations] = useState([]);
   const [subscription, setSubscription] = useState(null);
   const [sortValue, setSortValue] = useState("");
+  const [categoryValue, setCategoryValue] = useState("Personal Info");
   const [page, setPage] = useState(0); 
   const [rowsPerPage, setRowsPerPage] = useState(10); 
+  const[open,setOpen] = useState(false);
 
   const sortOptions = ["Name", "Vehicle", "Address"];
+  const categoryOptions =["Personal Info", "Vehicle Info"]
 
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleRowsPerPageChange = (event) => {
-    setRowsPerPage(+event.target.value);
-    setPage(0);
-  };
+  
 
   const navigate = useNavigate();
 
@@ -113,20 +109,25 @@ const Blocklist = () => {
   const handleSort = (e) => {
     const value = e.target.value;
     setSortValue(value);
-
+  
     const sortedData = [...data].sort((a, b) => {
       if (value === "Name") {
         return a.name.localeCompare(b.name);
       } else if (value === "Vehicle") {
-        return a.vehicleInfo?.vehicleType.localeCompare(b.vehicleInfo?.vehicleType || "");
+        return (a.vehicleInfo?.vehicleType || "").localeCompare(b.vehicleInfo?.vehicleType || "");
       } else if (value === "Address") {
         return a.address.localeCompare(b.address);
       }
       return 0;
     });
-
+  
     setData(sortedData);
   };
+  
+  const handleCategory = (e) => {
+    setCategoryValue(e.target.value);
+  };
+  
 
   const handleSearch = (e) => {
     setNameSearch(e.target.value);
@@ -151,6 +152,15 @@ const Blocklist = () => {
     return filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
   }, [filteredData, page, rowsPerPage]);
 
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleRowsPerPageChange = (event) => {
+    setRowsPerPage(+event.target.value);
+    setPage(0);
+  };
+
   return (
     <div className="commuters-main-content">
        {showModal && profileData && (
@@ -161,33 +171,56 @@ const Blocklist = () => {
               <span className="close" onClick={() => setShowModal(false)}>&times;</span>
               <h2 className="profile-title">Driver Profile</h2>
               <div className="profile-container">
-                <div className="profile-image">
+              <div className="profile-image">
                   <img src="image.png" alt="Profile" />
-                  <p><strong>Join Date:</strong> {profileData.createdAt ? moment(profileData.createdAt).format("MMMM DD, YYYY") : "N/A"}</p>
-                  <p><strong>Last Login:</strong> {profileData.lastLogin}</p>
-                  <li><strong><a href="#!" onClick={handleViewViolations}>Violations</a></strong></li>
-                  <p>Ratings: {rating}</p>
-                  <p>Subscription Type: {subscription || "N/A"}</p>
+                  <select onChange={handleCategory} value={categoryValue}>
+                    <option value="">Select Info Category</option>
+                    {categoryOptions.map((item, index) => (
+                      <option value={item} key={index}>
+                        {item}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="dropdown-container"> 
+                  <button className="dropdown" onClick={() => setOpen(!open)}>
+                    View more 
+                  </button>
+                  <div className={`dropdown-menu ${open ? 'active' : 'inactive'}`}>
+                    <ul>
+                      <DropdownItem text={<p><strong>Join Date:</strong> {profileData.createdAt ? moment(profileData.createdAt).format("MMMM DD, YYYY") : "N/A"}</p>} />
+                      <DropdownItem text={<p><strong>Last Login:</strong> {profileData.lastLogin || "N/A"}</p>} />
+                      <DropdownItem text={<p><strong>Subscription Type:</strong> {subscription || "N/A"}</p>} />
+                      <DropdownItem text={<p><strong>Ratings:</strong> {rating}</p>} />
+                       <DropdownItem text={ <button><li><strong><a href="#!" onClick={handleViewViolations}>Violations</a></strong></li></button>} />
+                    </ul>
+                  </div>
                 </div>
-                <div className="profile-details">
-                  <div className="driverInfo">
-                    <p><strong>Driver Information</strong></p>
-                    <p><strong>ID:</strong> {profileData._id}</p>
-                    <p><strong>Name:</strong> {profileData.name}</p>
-                    <p><strong>Email:</strong> {profileData.email}</p>
-                    <p><strong>Phone:</strong> {profileData.number}</p>
-                    <p><strong>Address:</strong> {profileData.address}</p>
-                    <p><strong>Birthday:</strong> {profileData.birthday}</p>
-                  </div>
-                  <div className="vehicleInfo">
-                    <p><strong>Vehicle Information</strong></p>
-                    <p><strong>Vehicle Type:</strong> {profileData.vehicleInfo?.vehicleType }</p>
-                    <p><strong>Model:</strong> {profileData.vehicleInfo?.model}</p>
-                    <p><strong>Year:</strong> {profileData.vehicleInfo?.year}</p>
-                    <p><strong>Color:</strong> {profileData.vehicleInfo?.color}</p>
-                    <p><strong>Plate Number:</strong> {profileData.vehicleInfo?.plateNumber}</p>
-                    <p><strong>Capacity:</strong> {profileData.vehicleInfo?.capacity}</p>
-                  </div>
+                </div>
+                  <div className="profile-details">
+                  {categoryValue === "Personal Info" && (
+                    <div className="driverInfo">
+                      <p><strong>Driver Information</strong></p>
+                      <p><strong>ID:</strong> {profileData._id}</p>
+                      <p><strong>Name:</strong> {profileData.name}</p>
+                      <p><strong>Email:</strong> {profileData.email}</p>
+                      <p><strong>Phone:</strong> {profileData.number}</p>
+                      <p><strong>Address:</strong> {profileData.address}</p>
+                      <p><strong>Birthday:</strong> {profileData.birthday}</p>
+                    </div>
+                  )}
+
+                  {categoryValue === "Vehicle Info" && (
+                    <div className="vehicleInfo">
+                      <p><strong>Vehicle Information</strong> 
+                </p>
+                      <p><strong>Vehicle Type:</strong> {profileData.vehicleInfo?.vehicleType}</p>
+                      <p><strong>Model:</strong> {profileData.vehicleInfo?.model}</p>
+                      <p><strong>Year:</strong> {profileData.vehicleInfo?.year}</p>
+                      <p><strong>Color:</strong> {profileData.vehicleInfo?.color}</p>
+                      <p><strong>Plate Number:</strong> {profileData.vehicleInfo?.plateNumber}</p>
+                      <p><strong>Capacity:</strong> {profileData.vehicleInfo?.capacity}</p>
+                    </div>
+                  )}
                 </div>
                 </div>
               </div>
@@ -225,9 +258,9 @@ const Blocklist = () => {
           boxShadow: "0 2px 10px rgba(0, 0, 0, 0.5)",
         }}
       >
-        <Table>
+        <Table sx={{ '& .MuiTableCell-root': { padding: '12px' } }}>
           <TableHead>
-            <TableRow>
+            <TableRow >
               <TableCell>ID</TableCell>
               <TableCell>Name</TableCell>
               <TableCell>Phone</TableCell>
@@ -236,18 +269,16 @@ const Blocklist = () => {
               <TableCell>Action</TableCell>
             </TableRow>
           </TableHead>
-          <TableBody>
+          <TableBody >
             {paginatedData.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell>{item.id}</TableCell>
+              <TableRow key={item.id} >
+                <TableCell >{item.id}</TableCell>
                 <TableCell>{item.name || "N/A"}</TableCell>
                 <TableCell>{item.number || "N/A"}</TableCell>
                 <TableCell>{item.address || "N/A"}</TableCell>
                 <TableCell>{item.vehicleInfo?.vehicleType || "N/A"}</TableCell>
                 <TableCell>
-                  <Button variant="contained" onClick={() => handleViewProfile(item.id)}>
-                    View
-                  </Button>
+                <button className="view-button" onClick={() => handleViewProfile(item.id)}>View</button>
                 </TableCell>
               </TableRow>
             ))}
@@ -267,5 +298,13 @@ const Blocklist = () => {
     </div>
   );
 };
+
+function DropdownItem (props){
+  return(
+    <li className="dropdownItem">
+      <a> {props.text}</a>
+    </li>
+  );
+}
 
 export default Blocklist;

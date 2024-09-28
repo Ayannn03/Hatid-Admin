@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import TabBar from '../tab-bar/tabBar';
 import axios from 'axios';
 import moment from 'moment';
 import { IoSearch } from "react-icons/io5";
 import './commuters.css';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TablePagination } from '@mui/material';
 
 const API_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/users';
 
@@ -15,8 +16,11 @@ const Commuters = () => {
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [sortValue, setSortValue] = useState("");
+  const [page, setPage] = useState(0); 
+  const [rowsPerPage, setRowsPerPage] = useState(10); 
 
   const sortOptions = ["Name", "Address"];
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -54,19 +58,31 @@ const Commuters = () => {
     const value = e.target.value;
     setSortValue(value);
   
-    const sortedData = [...data].sort((a, b) => {
+    const sortedData = [...filteredData].sort((a, b) => {
       if (value === "Name") {
         return a.name.localeCompare(b.name);
       } else if (value === "Address") {
-        return a.address.localeCompare(b.address);
+        return (a.address || "").localeCompare(b.address || ""); 
       }
       return 0;
     });
   
     setData(sortedData);
   };
-  
 
+  const paginatedData = useMemo(() => {
+    return filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  }, [filteredData, page, rowsPerPage]);
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleRowsPerPageChange = (event) => {
+    setRowsPerPage(+event.target.value);
+    setPage(0);
+  };
+  
   return (
     <div className='commuters-main-content'>
       {showModal && profileData && (
@@ -111,51 +127,65 @@ const Commuters = () => {
             ))}
           </select>
         </div>
-      <div className="search-bar-container">
-      <IoSearch className="search-icon"/>
-        <input
-          className="input-design"
-          type="text"
-          placeholder= "Search"
-          value={nameSearch}
-          onChange={handleSearch}
-        />
-      </div>
+        <div className="search-bar-container">
+          <IoSearch className="search-icon"/>
+          <input
+            className="input-design"
+            type="text"
+            placeholder= "Search"
+            value={nameSearch}
+            onChange={handleSearch}
+          />
+        </div>
       </div>
 
       {loading ? (
         <div className="loading">Loading...</div>
       ) : (
         <div className='passenger-table'>
-          <table>
-            <thead>
-              <tr className="driver-content">
-                <th>ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Address</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredData.map((item) => (
-                <tr key={item._id}>
-                  <td>{item.id}</td>
-                  <td>{item.name}</td>
-                  <td>{item.email}</td>
-                  <td>{item.number}</td>
-                  <td>{item.address}</td>
-                  <td>
-                    <>
-                      <button className="delete-button" onClick={() => handleDelete(item.id)}>Block</button>
-                      <button className="view-button" onClick={() => handleViewProfile(item.id)}>View Profile</button>
-                    </>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <TableContainer
+            sx={{
+              maxHeight: 550,
+              marginLeft: 15,
+              maxWidth: "92%",
+              boxShadow: "0 2px 10px rgba(0, 0, 0, 0.5)",
+            }}>
+            <Table sx={{ '& .MuiTableCell-root': { padding: '12px' } }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell>ID</TableCell>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Email</TableCell>
+                  <TableCell>Phone</TableCell>
+                  <TableCell>Address</TableCell>
+                  <TableCell>Action</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {paginatedData.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell>{item.id}</TableCell>
+                    <TableCell>{item.name || "N/A"}</TableCell>
+                    <TableCell>{item.email || "N/A"}</TableCell>
+                    <TableCell>{item.number || "N/A"}</TableCell>
+                    <TableCell>{item.address || "N/A"}</TableCell>
+                    <TableCell>
+                      <button className="view-button" onClick={() => handleViewProfile(item.id)}>View</button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <TablePagination
+            rowsPerPageOptions={[10, 20, 30]}
+            component="div"
+            count={filteredData.length}
+            page={page}
+            rowsPerPage={rowsPerPage}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleRowsPerPageChange}
+          />
           {error && <div className="error-message">{error}</div>}
         </div>
       )}
