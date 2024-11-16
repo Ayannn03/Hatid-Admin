@@ -1,0 +1,17 @@
+.signup{
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    height: 600px;
+    margin-top: 50px;
+    border-radius: 8px;
+    width: 40%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.log{
+    display: flex;
+    justify-content: center;
+}

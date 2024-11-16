@@ -3,16 +3,18 @@ import { useNavigate } from "react-router-dom";
 import TabBar from "../tab-bar/tabBar";
 import axios from "axios";
 import moment from "moment";
+import { BsCurrencyDollar } from "react-icons/bs";
+import { MdEmail, MdPhone, MdLocationOn, MdCake, MdEvent, MdAccessTime, MdSubscriptions, MdDirectionsCar, MdPalette, MdCalendarToday, MdStar} from "react-icons/md";
 import { IoSearch } from "react-icons/io5";
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow,  TablePagination } from "@mui/material";
 import "./driver.css";
 
 const DRIVER_API_URL =
-  "https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/driver/";
+  "https://melodious-conkies-9be892.netlify.app/.netlify/functions/api/driver";
 const VIOLATIONS_API_URL =
-  "https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/violate/violation/";
+  "https://melodious-conkies-9be892.netlify.app/.netlify/functions/api/violate/violation/";
 const RATING_API_URL =
-  "https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/rate/ratings/";
+  "https://melodious-conkies-9be892.netlify.app/.netlify/functions/api/rate/ratings/";
 
 const Driver = () => {
   const [data, setData] = useState([]);
@@ -123,10 +125,9 @@ const Driver = () => {
     setData(sortedData);
   };
   
-  const handleCategory = (e) => {
-    setCategoryValue(e.target.value);
+  const handleCategory = (value) => {
+    setCategoryValue(value);
   };
-  
 
   const handleSearch = (e) => {
     setNameSearch(e.target.value);
@@ -169,86 +170,107 @@ const Driver = () => {
             <div className="modal-content">
               <span className="close" onClick={() => setShowModal(false)}>&times;</span>
               <h2 className="profile-title">Driver Profile</h2>
-              <div className="profile-container">
-              <div className="profile-image">
-                  <img src="image.png" alt="Profile" />
-                  <select onChange={handleCategory} value={categoryValue}>
-                    <option value="">Select Info Category</option>
-                    {categoryOptions.map((item, index) => (
-                      <option value={item} key={index}>
-                        {item}
-                      </option>
-                    ))}
-                  </select>
-                  <p><strong>Join Date:</strong> {profileData.createdAt ? moment(profileData.createdAt).format("MMMM DD, YYYY") : "N/A"}</p>
-                  <p><strong>Last Login:</strong> {profileData.lastLogin}</p>
-                  <li><strong><a href="#!" onClick={handleViewViolations}>Violations</a></strong></li>
-                  <p>Ratings: {rating}</p>
-                  <p>Subscription Type: {subscription || "N/A"}</p>
+              <div className="driver-profile-container">
+              <div className="driver-profile-image">
+                    <img src="image.png" alt="Profile" />
+                    <div className="profile-info">
+                  
+                      <p> <strong>{profileData.name}</strong></p>
+                      <p><strong>Last Login:</strong> {profileData.lastLogin || "N/A"}</p>
+                      <p><MdStar/> <strong>Ratings:</strong> {rating}</p>
+                      <p>Violation: {violations.length || "0"}</p>
+                      </div>  
                 </div>
                   <div className="profile-details">
+                  <div className="tab-bar-container">
+                    {categoryOptions.map((category) => (
+                      <button
+                        key={category}
+                        className={`tab-bar-button ${categoryValue === category ? 'active' : ''}`}
+                        onClick={() => handleCategory(category)}
+                      >
+                        {category}
+                      </button>
+                    ))}
+                  </div>
                   {categoryValue === "Personal Info" && (
                     <div className="driverInfo">
                       <p><strong>Driver Information</strong></p>
                       <p><strong>ID:</strong> {profileData._id}</p>
-                      <p><strong>Name:</strong> {profileData.name}</p>
-                      <p><strong>Email:</strong> {profileData.email}</p>
-                      <p><strong>Phone:</strong> {profileData.number}</p>
-                      <p><strong>Address:</strong> {profileData.address}</p>
-                      <p><strong>Birthday:</strong> {profileData.birthday}</p>
+                      <p><MdEmail /> <strong>Email:</strong> {profileData.email}</p>
+                      <p><BsCurrencyDollar/> <strong>Subscription Type:</strong> {subscription || "N/A"}</p>
+                      <p><MdPhone /> <strong>Phone:</strong> {profileData.number}</p>
+                      <p><MdLocationOn /> <strong>Address:</strong> {profileData.address}</p>
+                      <p><MdCake /> <strong>Birthday:</strong> {profileData.birthday}</p>
+                      <p><MdCalendarToday/> <strong>Join Date:</strong> {profileData.createdAt ? moment(profileData.createdAt).format("MMMM DD, YYYY") : "N/A"}</p>
                     </div>
                   )}
 
                   {categoryValue === "Vehicle Info" && (
                     <div className="vehicleInfo">
                       <p><strong>Vehicle Information</strong></p>
-                      <p><strong>Vehicle Type:</strong> {profileData.vehicleInfo?.vehicleType}</p>
-                      <p><strong>Model:</strong> {profileData.vehicleInfo?.model}</p>
-                      <p><strong>Year:</strong> {profileData.vehicleInfo?.year}</p>
-                      <p><strong>Color:</strong> {profileData.vehicleInfo?.color}</p>
-                      <p><strong>Plate Number:</strong> {profileData.vehicleInfo?.plateNumber}</p>
-                      <p><strong>Capacity:</strong> {profileData.vehicleInfo?.capacity}</p>
+                      <p>
+                        <MdDirectionsCar /> <strong>Vehicle Type:</strong> {profileData.vehicleInfo?.vehicleType}
+                      </p>
+                      <p>
+                        <MdCalendarToday /> <strong>Model:</strong> {profileData.vehicleInfo?.model}
+                      </p>
+                      <p>
+                        <MdEvent /> <strong>Year:</strong> {profileData.vehicleInfo?.year}
+                      </p>
+                      <p>
+                        <MdPalette /> <strong>Color:</strong> {profileData.vehicleInfo?.color}
+                      </p>
+                      <p>
+                        <MdSubscriptions /> <strong>Plate Number:</strong> {profileData.vehicleInfo?.plateNumber}
+                      </p>
+                      <p>
+                        <MdAccessTime /> <strong>Capacity:</strong> {profileData.vehicleInfo?.capacity}
+                      </p>
                     </div>
-                  )}
+                  )}  
                 </div>
                 </div>
               </div>
             </div>
         </>
       )}
-      <div className="block-top-bar">
-        <h1 className="driver-list">Drivers List</h1>
-        <div className="sort-container" >
-          <select onChange={handleSort} value={sortValue}>
-            <option value="">Sort By:</option>
-            {sortOptions.map((item, index) => (
-              <option value={item} key={index}>
-                {item}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="search-bar-container">
-          <input
-            className="input-design"
-            type="text"
-            placeholder="Search"
-            value={nameSearch}
-            onChange={handleSearch}
-          />
-          <IoSearch className="search-icon" />
-        </div>
-      </div>
+      
       <TableContainer
         sx={{
-          maxHeight: 550,
+          maxHeight: 685,
           marginLeft: 15,
           maxWidth: "92%",
-          boxShadow: "0 2px 10px rgba(0, 0, 0, 0.5)",
+          marginTop: 1.5,
+          boxShadow: "0 2px 10px rgba(0, 0, 0, 0.3)",
         }}
-      >
-        <Table sx={{ '& .MuiTableCell-root': { padding: '12px' } }}>
-          <TableHead>
+      ><div className="driver-top-bar">
+      <h1 className="driver-list">Drivers List</h1>
+      <div className="sort-container" >
+        <select onChange={handleSort} value={sortValue}>
+          <option value="">Sort By:</option>
+          {sortOptions.map((item, index) => (
+            <option value={item} key={index}>
+              {item}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="search-bar-container">
+        <input
+          className="input-design"
+          type="text"
+          placeholder="Search"
+          value={nameSearch}
+          onChange={handleSearch}
+        />
+        <IoSearch className="search-icon" />
+      </div>
+    </div>
+        <Table sx={{ '& .MuiTableCell-root': { padding: '14px', textAlign:"center"} }}>
+          
+          <TableHead >
+            
             <TableRow >
               <TableCell>ID</TableCell>
               <TableCell>Name</TableCell>
@@ -267,7 +289,7 @@ const Driver = () => {
                 <TableCell>{item.address || "N/A"}</TableCell>
                 <TableCell>{item.vehicleInfo?.vehicleType || "N/A"}</TableCell>
                 <TableCell>
-                <button className="view-button" onClick={() => handleViewProfile(item.id)}>View</button>
+                <button className="view-button" onClick={() => handleViewProfile(item.id)}>View Details</button>
                 </TableCell>
               </TableRow>
             ))}

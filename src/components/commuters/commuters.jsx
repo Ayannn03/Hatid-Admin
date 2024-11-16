@@ -6,7 +6,7 @@ import { IoSearch } from "react-icons/io5";
 import './commuters.css';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TablePagination } from '@mui/material';
 
-const API_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/users';
+const API_URL = 'https://melodious-conkies-9be892.netlify.app/.netlify/functions/api/users';
 
 const Commuters = () => {
   const [data, setData] = useState([]);
@@ -96,7 +96,7 @@ const Commuters = () => {
             </button>
             <h2 className="profile-title">User Profile</h2>
             <div className="profile-container">
-              <div className="profile-image">
+              <div className="commuter-profile-image">
                 <img src="image.png" alt="Profile" />
                 <p><strong>Join Date:</strong> {profileData.createdAt ? moment(profileData.createdAt).format("MMMM DD, YYYY") : 'N/A'}</p>
                 <p><strong>Last Login:</strong> {profileData.lastLogin}</p>
@@ -114,8 +114,19 @@ const Commuters = () => {
           </div>
         </div>
       )}
-
-      <div className="commuter-top-bar">
+      {loading ? (
+        <div className="loading">Loading...</div>
+      ) : (
+        <div className='passenger-table'>
+          <TableContainer
+            sx={{
+              maxHeight: 680,
+              marginLeft: 15,
+              marginTop: 3,
+              maxWidth: "92%",
+              boxShadow: "0 2px 10px rgba(0, 0, 0, 0.5)",
+            }}>
+              <div className="commuter-top-bar">
         <h1 className="commuters-list">Commuters List</h1>
         <div className='sort-container'>
           <select onChange={handleSort} value={sortValue}>
@@ -138,19 +149,7 @@ const Commuters = () => {
           />
         </div>
       </div>
-
-      {loading ? (
-        <div className="loading">Loading...</div>
-      ) : (
-        <div className='passenger-table'>
-          <TableContainer
-            sx={{
-              maxHeight: 550,
-              marginLeft: 15,
-              maxWidth: "92%",
-              boxShadow: "0 2px 10px rgba(0, 0, 0, 0.5)",
-            }}>
-            <Table sx={{ '& .MuiTableCell-root': { padding: '12px' } }}>
+            <Table sx={{ '& .MuiTableCell-root': { padding: '15px' } }}>
               <TableHead>
                 <TableRow>
                   <TableCell>ID</TableCell>
@@ -170,7 +169,7 @@ const Commuters = () => {
                     <TableCell>{item.number || "N/A"}</TableCell>
                     <TableCell>{item.address || "N/A"}</TableCell>
                     <TableCell>
-                      <button className="view-button" onClick={() => handleViewProfile(item.id)}>View</button>
+                      <button className="view-button" onClick={() => handleViewProfile(item.id)}>View Details</button>
                     </TableCell>
                   </TableRow>
                 ))}

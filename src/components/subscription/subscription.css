@@ -1,13 +1,11 @@
 .subscription-top-bar {
   display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    width: 86%;
-    margin-bottom: 20px;
-    margin-left: 220px;
-    border-radius: 8px;
-    padding: 40px;
-    background-color: white;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 40px;
+  background-color: #fff;
+ 
+ 
 }
 

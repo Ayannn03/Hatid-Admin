@@ -1,34 +1,37 @@
+/* Top bar */
 .violation-top-bar {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  width: 85%;
-  margin-left: 220px;
-  padding: 10px;
+  padding: 20px 40px;
+  background-color: #fff;  
 }
 
+/* Table */
 thead {
-  background: whitesmoke;
-  
+  background: white;
+  border-bottom:#71717a;
 }
 
 table tr {
   white-space: nowrap;
-  
+  color:#71717a;
 }
 
 tbody tr {
   background-color: white;
-  border-bottom: 1px solid #ddd;
-  
 }
 
 tbody tr:hover {
   background-color: #f0f0f0;
 }
 
+table tr, table td {
+  border-bottom: none !important;
+}
 
+/* Modal buttons */
 .modal-button {
   display: flex;
   justify-content: flex-end;
@@ -55,55 +58,32 @@ tbody tr:hover {
   background-color: #333;
 }
 
-.driver-modal {
-  border-radius: 8px;
-  background-color: whitesmoke;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: fixed;
-  width: 60%;
-  height: 80%;
-  z-index: 9999;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.driver-modal-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
+/* Profile title */
 .profile-title {
   font-size: 24px;
   padding: 20px;
 }
 
-
-.profile-image img {
-  width: 120px;
-  height: 120px;
+/* Violation image */
+.violation-image img {
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   border: 2px solid #ddd;
 }
 
-.violation-details {
+.violation-image {
+  width: 20%;
+}
+
+/* Violation details */
+.violation-details p {
+  padding: 25px;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  margin-left: 20px;
+  flex-direction: row;
 }
 
-.violation-details p{
-  padding: 15px;
-  margin-bottom: 10px;
-  border-radius: 5px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-
+/* Close button */
 .close-button {
   margin-top: 20px;
   background-color: #007bff;
@@ -118,6 +98,7 @@ tbody tr:hover {
   background-color: #0056b3;
 }
 
+/* Modal overlay */
 .driver-modal-overlay {
   position: fixed;
   top: 0;
@@ -131,6 +112,7 @@ tbody tr:hover {
   z-index: 1000;
 }
 
+/* Close icon in modal */
 .close {
   position: absolute;
   top: 10px;
@@ -140,9 +122,41 @@ tbody tr:hover {
   color: #333;
 }
 
+/* View button */
 .view-button {
   margin: 0 5px;
   padding: 5px 10px;
   font-size: 12px;
   cursor: pointer;
+}
+
+/* Violation modal */
+.violation-modal {
+  border-radius: 8px;
+  background-color: white;
+  display: flex;
+  position: fixed;
+  width: 50%;
+  height: 75%;
+  z-index: 9999;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Violation section */
+.violation {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  margin-left: 15px;
+}
+
+/* Report section */
+.report {
+  display: flex;
+  flex-direction: column;
+  margin-left: 100px;
+  margin-top: -70px;
+  margin-bottom: 40px;
 }

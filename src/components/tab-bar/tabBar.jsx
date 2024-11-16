@@ -7,22 +7,13 @@ import {
   BsCurrencyDollar,
   BsCarFrontFill,
   BsPaperclip,
+  BsPower,
 } from "react-icons/bs";
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
+
 
 const TabBar = () => {
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const open = Boolean(anchorEl);
-
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
+  
+  
   return (
     <div className="main-container">
       <div className="tabBar">
@@ -65,30 +56,12 @@ const TabBar = () => {
               <BsPeopleFill className="icon" /> Blocklist
             </Link>
           </li>
+          <li className="nav-item">
+            <Link to="/signup" className="nav-link">
+              <BsPower className="icon" /> Logout
+            </Link>
+          </li>
         </ul>
-      </div>
-      <div className="profile">
-        <button onClick={handleClick}>
-          <img src="image.png" alt="Profile" />
-        </button>
-        <Menu
-          id="profile-menu"
-          anchorEl={anchorEl}
-          open={open}
-          onClose={handleClose}
-          anchorOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-        >
-          <MenuItem onClick={handleClose}>Profile</MenuItem>
-          <MenuItem onClick={handleClose}>My Account</MenuItem>
-          <MenuItem onClick={handleClose}>Logout</MenuItem>
-        </Menu>
       </div>
     </div>
   );

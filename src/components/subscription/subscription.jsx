@@ -5,7 +5,7 @@ import moment from 'moment';
 import { TableContainer, Table, TableBody, TableCell, TableHead, TableRow, TablePagination, Button } from "@mui/material";
 import './subscription.css';
 
-const API_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/subs/subscription';
+const API_URL = 'https://melodious-conkies-9be892.netlify.app/.netlify/functions/api/subs/subscription/';
 
 const Subscription = () => {
   const [data, setData] = useState([]);
@@ -110,6 +110,18 @@ const Subscription = () => {
         </div>
       )}
 
+
+      <div className="subscriptions-table">
+      <TableContainer
+        sx={{
+          maxHeight: 680,
+          marginLeft: 28,
+          maxWidth: "86%",
+          marginTop:"30px",
+          boxShadow: "0 2px 10px rgba(0, 0, 0, 0.5)",
+        }}
+      >
+        
       <div className="subscription-top-bar">
         <h1 className="subcription-list">Subscription List</h1>
         <div className="search-bar-container">
@@ -122,17 +134,7 @@ const Subscription = () => {
           />
         </div>
       </div>
-
-      <div className="subscriptions-table">
-      <TableContainer
-        sx={{
-          maxHeight: 550,
-          marginLeft: 28,
-          maxWidth: "86%",
-          boxShadow: "0 2px 10px rgba(0, 0, 0, 0.5)",
-        }}
-      >
-        <Table sx={{ '& .MuiTableCell-root': { padding: '12px' } }}>
+        <Table sx={{ '& .MuiTableCell-root': { padding: '15px' } }}>
           <TableHead>
             <TableRow>
               <TableCell>ID</TableCell>

@@ -3,7 +3,7 @@ import TabBar from '../tab-bar/tabBar';
 import axios from 'axios';
 import { MdCheckBox } from 'react-icons/md';
 
-const API_URL = 'https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/violate/violation';
+const API_URL = 'https://melodious-conkies-9be892.netlify.app/.netlify/functions/api/violate/violation';
 
 const ratings = () => {
     const [data, setData] = useState([]);

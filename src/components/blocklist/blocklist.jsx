@@ -8,11 +8,11 @@ import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow,  Tabl
 import "./blocklist.css";
 
 const DRIVER_API_URL =
-  "https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/driver/";
+  "https://zippy-pie-b50d6c.netlify.app/.netlify/functions/api/driver/";
 const VIOLATIONS_API_URL =
-  "https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/violate/violation/";
+  "https://zippy-pie-b50d6c.netlify.app/.netlify/functions/api/violate/violation/";
 const RATING_API_URL =
-  "https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/rate/ratings/";
+  "https://zippy-pie-b50d6c.netlify.app/.netlify/functions/api/api/rate/ratings/";
 
 const Blocklist = () => {
   const [data, setData] = useState([]);
@@ -124,9 +124,13 @@ const Blocklist = () => {
     setData(sortedData);
   };
   
-  const handleCategory = (e) => {
-    setCategoryValue(e.target.value);
+  const handleCategoryChange = (value) => {
+    setCategoryValue(value);
   };
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
   
 
   const handleSearch = (e) => {
@@ -170,33 +174,30 @@ const Blocklist = () => {
             <div className="modal-content">
               <span className="close" onClick={() => setShowModal(false)}>&times;</span>
               <h2 className="profile-title">Driver Profile</h2>
-              <div className="profile-container">
-              <div className="profile-image">
+              <div className="blocklist-profile-container">
+              <div className="blocklist-profile-image">
                   <img src="image.png" alt="Profile" />
-                  <select onChange={handleCategory} value={categoryValue}>
-                    <option value="">Select Info Category</option>
-                    {categoryOptions.map((item, index) => (
-                      <option value={item} key={index}>
-                        {item}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="dropdown-container"> 
-                  <button className="dropdown" onClick={() => setOpen(!open)}>
-                    View more 
-                  </button>
-                  <div className={`dropdown-menu ${open ? 'active' : 'inactive'}`}>
-                    <ul>
-                      <DropdownItem text={<p><strong>Join Date:</strong> {profileData.createdAt ? moment(profileData.createdAt).format("MMMM DD, YYYY") : "N/A"}</p>} />
-                      <DropdownItem text={<p><strong>Last Login:</strong> {profileData.lastLogin || "N/A"}</p>} />
-                      <DropdownItem text={<p><strong>Subscription Type:</strong> {subscription || "N/A"}</p>} />
-                      <DropdownItem text={<p><strong>Ratings:</strong> {rating}</p>} />
-                       <DropdownItem text={ <button><li><strong><a href="#!" onClick={handleViewViolations}>Violations</a></strong></li></button>} />
-                    </ul>
-                  </div>
-                </div>
+                 
+                    <div className="profile-info">
+                      <p><strong>Join Date:</strong> {profileData.createdAt ? moment(profileData.createdAt).format("MMMM DD, YYYY") : "N/A"}</p>
+                      <p><strong>Last Login:</strong> {profileData.lastLogin || "N/A"}</p>
+                      <p><strong>Subscription Type:</strong> {subscription || "N/A"}</p>
+                      <p><strong>Ratings:</strong> {rating}</p>
+                      <button><li><strong><a href="#!" onClick={handleViewViolations}>Violations</a></strong></li></button>
+                      </div>  
                 </div>
                   <div className="profile-details">
+                  <div className="block-tab-bar-container">
+                    {categoryOptions.map((category) => (
+                      <button
+                        key={category}
+                        className={`tab-bar-button ${categoryValue === category ? 'active' : ''}`}
+                        onClick={() => handleCategoryChange(category)}
+                      >
+                        {category}
+                      </button>
+                    ))}
+                  </div>
                   {categoryValue === "Personal Info" && (
                     <div className="driverInfo">
                       <p><strong>Driver Information</strong></p>
@@ -211,8 +212,7 @@ const Blocklist = () => {
 
                   {categoryValue === "Vehicle Info" && (
                     <div className="vehicleInfo">
-                      <p><strong>Vehicle Information</strong> 
-                </p>
+                      <p><strong>Vehicle Information</strong></p>
                       <p><strong>Vehicle Type:</strong> {profileData.vehicleInfo?.vehicleType}</p>
                       <p><strong>Model:</strong> {profileData.vehicleInfo?.model}</p>
                       <p><strong>Year:</strong> {profileData.vehicleInfo?.year}</p>

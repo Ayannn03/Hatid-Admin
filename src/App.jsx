@@ -7,6 +7,8 @@ import Commuters from './components/commuters/commuters';
 import Blocklist from './components/blocklist/blocklist';
 import Subscription from './components/subscription/subscription';
 import Violations from './components/violations/violations';
+import Signup from './components/signup/signup';
+
 
 
 
@@ -22,6 +24,7 @@ const App = () => {
         <Route path="/subscription" element={<Subscription />} />
         <Route path="/violations" element={<Violations />} />
         <Route path="/applications" element={<Applications />} />
+        <Route path="/signup" element={<Signup />} />
       </Routes>
     </Router>
   );
