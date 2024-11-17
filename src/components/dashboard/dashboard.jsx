@@ -9,6 +9,7 @@ import React, {
 import axios from "axios";
 import { BsPeopleFill, BsCarFrontFill, BsCurrencyDollar } from "react-icons/bs";
 import { BarChart } from '@mui/x-charts/BarChart';
+import { LineChart } from "@mui/x-charts/LineChart";
 import "./dashboard.css";
 
 const COMMUTERS_API_URL =
@@ -100,63 +101,11 @@ function Dashboard() {
     [commutersCount, driversCount, bookingCount, totalRevenue]
   );
 
-  const booking =[BOOKING_API_URL]
-  const revenue = [SUBSCRIPTION_API_URL]
-  
-
-  const months = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
+  const lineChartData = [
+    { label: "Bookings", value: bookingCount },
+    { label: "Drivers", value: driversCount },
+    { label: "Revenue", value: totalRevenue },
   ];
-
-  const renderCalendar = useCallback(() => {
-    const { month, year } = calendar;
-    const start = new Date(year, month, 1).getDay();
-    const endDate = new Date(year, month + 1, 0).getDate();
-    const end = new Date(year, month, endDate).getDay();
-    const endDatePrev = new Date(year, month, 0).getDate();
-
-    let datesHtml = "";
-
-    for (let i = start; i > 0; i--) {
-      datesHtml += `<li class="inactive">${endDatePrev - i + 1}</li>`;
-    }
-
-    for (let i = 1; i <= endDate; i++) {
-      const isToday =
-        i === new Date().getDate() &&
-        month === new Date().getMonth() &&
-        year === new Date().getFullYear();
-      datesHtml += `<li${isToday ? ' class="today"' : ""}>${i}</li>`;
-    }
-
-    for (let i = end; i < 6; i++) {
-      datesHtml += `<li class="inactive">${i - end + 1}</li>`;
-    }
-
-    setDatesHtml(datesHtml);
-  }, [calendar]);
-
-  useEffect(() => {
-    renderCalendar();
-  }, [renderCalendar]);
-
-  const handleNavClick = (direction) => {
-    setCalendar((prevCalendar) => {
-      let newMonth = prevCalendar.month + (direction === "next" ? 1 : -1);
-      let newYear = prevCalendar.year;
-
-      if (newMonth === 12) {
-        newMonth = 0;
-        newYear += 1;
-      } else if (newMonth === -1) {
-        newMonth = 11;
-        newYear -= 1;
-      }
-
-      return { month: newMonth, year: newYear };
-    });
-  };
 
   return (
     <main className="main-container">
@@ -175,26 +124,12 @@ function Dashboard() {
           </div>
         ))}
       </div>
-      <BarChart
-      series={[
-        { data: [35, 44, 24, 34] },
-        { data: [51, 6, 49, 30] },
-        { data: [15, 25, 30, 50] },
-        { data: [60, 50, 15, 25] },
-      ]}
-      height={450}
-      width={800}
-      xAxis={[{ data: ['Q1', 'Q2', 'Q3', 'Q4'], scaleType: 'band' }]}
-      margin={{ top: 80, bottom: 30, left: 80, right: 10 }}
-    />
-      <div className="calendar">
-        <div className="calendar-header">
-        <button id="prev" onClick={() => handleNavClick("prev")}></button>
-        <button id="next" onClick={() => handleNavClick("next")}></button>
-          <h3>{`${months[calendar.month]} ${calendar.year}`}</h3>
-        </div>
-        <ul className="dates" dangerouslySetInnerHTML={{ __html: datesHtml }} />
-      </div>
+        <LineChart
+          series={[{data: lineChartData.map((item) => item.value) }]}
+          height={450} 
+          width={800}
+          xAxis={[{ data: lineChartData.map((item) => item.label), scaleType: "band" }]}
+        />
       <Suspense fallback={<div>Loading...</div>}>
         <TabBar />
       </Suspense>

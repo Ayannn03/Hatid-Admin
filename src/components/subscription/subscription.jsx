@@ -161,9 +161,9 @@ const Subscription = () => {
         <TableCell>{isExpired ? 'Expired' : item.status}</TableCell>
         <TableCell>
           {!isExpired && (
-            <Button className="view-button" onClick={() => handleAcceptPayment(item._id)}>
+            <button className="view-button" onClick={() => handleAcceptPayment(item._id)}>
               Accept Payment
-            </Button>
+            </button>
           )}
         </TableCell>
       </TableRow>

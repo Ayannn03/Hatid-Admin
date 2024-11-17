@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import TabBar from "../tab-bar/tabBar";
 import axios from "axios";
 import moment from "moment";
+import{FaStar} from "react-icons/fa"
 import { BsCurrencyDollar } from "react-icons/bs";
 import { MdEmail, MdPhone, MdLocationOn, MdCake, MdEvent, MdAccessTime, MdSubscriptions, MdDirectionsCar, MdPalette, MdCalendarToday, MdStar} from "react-icons/md";
 import { IoSearch } from "react-icons/io5";
@@ -10,7 +11,7 @@ import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow,  Tabl
 import "./driver.css";
 
 const DRIVER_API_URL =
-  "https://melodious-conkies-9be892.netlify.app/.netlify/functions/api/driver";
+  "https://melodious-conkies-9be892.netlify.app/.netlify/functions/api/driver/approved-drivers";
 const VIOLATIONS_API_URL =
   "https://melodious-conkies-9be892.netlify.app/.netlify/functions/api/violate/violation/";
 const RATING_API_URL =
@@ -24,13 +25,14 @@ const Driver = () => {
   const [showModal, setShowModal] = useState(false);
   const [showViolationModal, setShowViolationModal] = useState(false);
   const [profileData, setProfileData] = useState(null);
-  const [rating, setRating] = useState("0.0");
+  const [rating, setRating] = useState(null);
   const [violations, setViolations] = useState([]);
   const [subscription, setSubscription] = useState(null);
   const [sortValue, setSortValue] = useState("");
   const [categoryValue, setCategoryValue] = useState("Personal Info");
   const [page, setPage] = useState(0); 
   const [rowsPerPage, setRowsPerPage] = useState(10); 
+
 
   const sortOptions = ["Name", "Vehicle", "Address"];
   const categoryOptions =["Personal Info", "Vehicle Info"]
@@ -42,6 +44,7 @@ const Driver = () => {
   const fetchData = useCallback(async () => {
     try {
       const driverResponse = await axios.get(DRIVER_API_URL);
+
       const driverData = driverResponse.data;
 
       const dataWithAdditionalInfo = driverData.map((driver, index) => ({
@@ -174,12 +177,24 @@ const Driver = () => {
               <div className="driver-profile-image">
                     <img src="image.png" alt="Profile" />
                     <div className="profile-info">
-                  
-                      <p> <strong>{profileData.name}</strong></p>
+                    <div>
+                        {[...Array(5)].map((_, index) => {
+                          const currentRating = index + 1;
+                          return (
+                            <FaStar
+                              key={index}
+                              size={20}
+                              color={currentRating <= Math.round(rating) ? "gold" : "gray"}
+                              style={{ marginRight: 5 }}
+                            />
+                          );
+                        })}
+                      </div>
+                      <p><strong>{profileData.name}</strong></p>
                       <p><strong>Last Login:</strong> {profileData.lastLogin || "N/A"}</p>
-                      <p><MdStar/> <strong>Ratings:</strong> {rating}</p>
                       <p>Violation: {violations.length || "0"}</p>
-                      </div>  
+                    </div>
+
                 </div>
                   <div className="profile-details">
                   <div className="tab-bar-container">
@@ -244,7 +259,8 @@ const Driver = () => {
           marginTop: 1.5,
           boxShadow: "0 2px 10px rgba(0, 0, 0, 0.3)",
         }}
-      ><div className="driver-top-bar">
+      >
+        <div className="driver-top-bar">
       <h1 className="driver-list">Drivers List</h1>
       <div className="sort-container" >
         <select onChange={handleSort} value={sortValue}>
