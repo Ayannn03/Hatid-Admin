@@ -25,11 +25,12 @@ export default function Applications() {
   const [applications, setApplications] = useState([]);
   const [error, setError] = useState(null);
   const [nameSearch, setNameSearch] = useState("");
-  const [modalOpen, setModalOpen] = useState(false); // Modal state
+  const [modalOpen, setModalOpen] = useState(false); // Modal state for documents
   const [selectedApplicationId, setSelectedApplicationId] = useState(null); // Store application ID for confirmation
   const [selectedImages, setSelectedImages] = useState([]); // Store selected images for modal
   const [confirmModalOpen, setConfirmModalOpen] = useState(false); // Modal for confirming approval
   const [previewImage, setPreviewImage] = useState(null); // For previewing the clicked image
+  const [imagePreviewModalOpen, setImagePreviewModalOpen] = useState(false); // State for new preview modal
 
   useEffect(() => {
     fetchData();
@@ -90,8 +91,8 @@ export default function Applications() {
   const closeModal = () => {
     setModalOpen(false);
     setSelectedApplicationId(null);
-    setSelectedImages([]);
-    setPreviewImage(null); // Reset preview image when closing the modal
+    setSelectedImages([]); // Clear selected images
+    setPreviewImage(null); // Reset preview image
   };
 
   const openConfirmModal = (applicationId) => {
@@ -102,6 +103,16 @@ export default function Applications() {
   const closeConfirmModal = () => {
     setConfirmModalOpen(false);
     setSelectedApplicationId(null);
+  };
+
+  const openImagePreviewModal = (image) => {
+    setPreviewImage(image);
+    setImagePreviewModalOpen(true); // Open the new preview modal
+  };
+
+  const closeImagePreviewModal = () => {
+    setImagePreviewModalOpen(false);
+    setPreviewImage(null); // Reset preview image when closing modal
   };
 
   return (
@@ -127,36 +138,13 @@ export default function Applications() {
                     padding: "8px",
                     cursor: "pointer", // Change cursor to pointer to indicate it's clickable
                   }}
-                  onClick={() => setPreviewImage(image)}  // Set the clicked image for preview
+                  onClick={() => openImagePreviewModal(image)} // Open image preview modal
                 />
               ))
             ) : (
               <p>No images available.</p>
             )}
           </div>
-
-          {/* Display Preview of Clicked Image */}
-          {previewImage && (
-            <div style={{
-              marginTop: "20px",
-              textAlign: "center",
-            }}>
-              <h3>Preview</h3>
-              <img
-                src={previewImage}
-                alt="Preview"
-                style={{
-                  width: "80%",
-                  maxWidth: "500px",
-                  height: "auto",
-                  objectFit: "contain",
-                  border: "1px solid #ddd",
-                  borderRadius: "8px",
-                  padding: "8px",
-                }}
-              />
-            </div>
-          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={closeModal} color="primary">
@@ -177,6 +165,35 @@ export default function Applications() {
           </Button>
           <Button onClick={handleApplicationApproval} color="primary">
             Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Image Preview Modal */}
+      <Dialog open={imagePreviewModalOpen} onClose={closeImagePreviewModal}>
+        <DialogTitle>Image Preview</DialogTitle>
+        <DialogContent>
+          {previewImage && (
+            <div style={{ textAlign: "center" }}>
+              <img
+                src={previewImage}
+                alt="Preview"
+                style={{
+                  width: "100%",
+                  maxWidth: "500px",
+                  height: "auto",
+                  objectFit: "contain",
+                  border: "1px solid #ddd",
+                  borderRadius: "8px",
+                  padding: "8px",
+                }}
+              />
+            </div>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeImagePreviewModal} color="primary">
+            Close
           </Button>
         </DialogActions>
       </Dialog>

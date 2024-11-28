@@ -202,7 +202,7 @@ const ActiveJeepSubscriptions = () => {
                 paginatedData.map((item) => (
                   <TableRow key={item._id}>
                     <TableCell>{item.id}</TableCell>
-                    <TableCell>{item.driver?.name}</TableCell>
+                    <TableCell>{item.driver?.name  || "N/A"}</TableCell>
                     <TableCell>{item.subscriptionType}</TableCell>
                     <TableCell>{item.vehicleType}</TableCell>
                     <TableCell>{moment(item.startDate).format('MMMM DD, YYYY')}</TableCell>

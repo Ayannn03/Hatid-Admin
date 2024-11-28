@@ -245,7 +245,7 @@ function Dashboard() {
       </div>
 
       <div className="ratings-container">
-        {topPerformingDrivers.length > 0 && (
+        {topPerformingDrivers.length > 0 ? (
           <div className="top-driver-card">
             <h3>Top Driver</h3>
             <div className="top-driver-content">
@@ -259,21 +259,26 @@ function Dashboard() {
               <p>Total Points: {topPerformingDrivers[0].totalRating}</p>
             </div>
           </div>
+        ):(
+          <p> No Top Performing Drivers</p>
         )}
-
         <div className="ratings-card">
-          <h3>Top Performing Drivers</h3>
+        <h3>Top Performing Drivers</h3>
+        {topPerformingDrivers.length > 0 ? (
           <ul>
             {topPerformingDrivers.map((driver, index) => (
               <li key={index}>
-                <strong>{driver.name}</strong>
+                <strong>{driver.name || "N/A"}</strong>
                 <span>
                   {driver.averageRating} (Total: {driver.totalRating} points)
                 </span>
               </li>
             ))}
           </ul>
-        </div>
+        ) : (
+          <p>No Top Performing Drivers</p>
+        )}
+      </div>
       </div>
     </div>
 

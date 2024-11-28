@@ -124,6 +124,11 @@ const SubscriptionReq = () => {
     setSubscriptionTypeFilter(e.target.value);
   };
 
+  const handleSearch = (e) => {
+    setNameSearch(e.target.value);
+  };
+
+
   return (
     <div className="subs-main-content">
       {/* Modal for viewing receipts */}
@@ -237,7 +242,7 @@ const SubscriptionReq = () => {
                         <TableCell>
                           {/* Accept button in the actions column */}
                           <button
-                            className="accept-button"
+                            className="view-button"
                             onClick={() => handleAcceptPayment(item._id)} // Handle accept payment action
                           >
                             Accept
