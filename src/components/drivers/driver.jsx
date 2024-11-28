@@ -5,17 +5,17 @@ import axios from "axios";
 import moment from "moment";
 import{FaStar} from "react-icons/fa"
 import { BsCurrencyDollar } from "react-icons/bs";
-import { MdEmail, MdPhone, MdLocationOn, MdCake, MdEvent, MdAccessTime, MdSubscriptions, MdDirectionsCar, MdPalette, MdCalendarToday, MdStar} from "react-icons/md";
+import { MdEmail, MdPhone, MdLocationOn, MdCake, MdEvent, MdAccessTime, MdSubscriptions, MdDirectionsCar, MdPalette, MdCalendarToday} from "react-icons/md";
 import { IoSearch } from "react-icons/io5";
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow,  TablePagination } from "@mui/material";
 import "./driver.css";
 
 const DRIVER_API_URL =
-  "https://melodious-conkies-9be892.netlify.app/.netlify/functions/api/driver/approved-drivers";
+  "https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/driver/approved-drivers";
 const VIOLATIONS_API_URL =
-  "https://melodious-conkies-9be892.netlify.app/.netlify/functions/api/violate/violation/";
+  "https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/violate/violation/";
 const RATING_API_URL =
-  "https://melodious-conkies-9be892.netlify.app/.netlify/functions/api/rate/ratings/";
+  "https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/rate/ratings/";
 
 const Driver = () => {
   const [data, setData] = useState([]);
@@ -26,16 +26,18 @@ const Driver = () => {
   const [showViolationModal, setShowViolationModal] = useState(false);
   const [profileData, setProfileData] = useState(null);
   const [rating, setRating] = useState(null);
+  const [driverRatings, setDriverRatings] = useState({});
   const [violations, setViolations] = useState([]);
   const [subscription, setSubscription] = useState(null);
   const [sortValue, setSortValue] = useState("");
   const [categoryValue, setCategoryValue] = useState("Personal Info");
   const [page, setPage] = useState(0); 
   const [rowsPerPage, setRowsPerPage] = useState(10); 
+ 
 
 
   const sortOptions = ["Name", "Vehicle", "Address"];
-  const categoryOptions =["Personal Info", "Vehicle Info"]
+  const categoryOptions =["Personal Info", "Vehicle Info" , "Ratings", "Violation", "License Images", "Vehicle Images"]
 
   
 
@@ -73,7 +75,7 @@ const Driver = () => {
 
   const fetchSubscriptionType = useCallback(async (driverId) => {
     try {
-      const response = await axios.get(`https://main--exquisite-dodol-f68b33.netlify.app/.netlify/functions/api/subs/subscription/type/${driverId}`);
+      const response = await axios.get(`https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/subs/subscription/type/${driverId}`);
 
       const { subscriptionType } = response.data;
       setSubscription(subscriptionType);
@@ -83,7 +85,31 @@ const Driver = () => {
     }
   }, []);
 
-  const fetchRating = useCallback(async (driverId) => {
+  const fetchAllRatings = useCallback(async (driverId) => {
+    try {
+      const res = await axios.get(`${RATING_API_URL}${driverId}`);
+      if (res.data.status === "ok") {
+        setDriverRatings(prevRatings => ({
+          ...prevRatings,
+          [driverId]: res.data.data.ratings // Store ratings for each driver
+        }));
+      } else {
+        setDriverRatings(prevRatings => ({
+          ...prevRatings,
+          [driverId]: [] // If no ratings, store an empty array
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching all ratings:", error);
+      setDriverRatings(prevRatings => ({
+        ...prevRatings,
+        [driverId]: [] // If error occurs, store an empty array
+      }));
+    }
+  }, []);
+  
+  
+  const fetchAverageRating = useCallback(async (driverId) => {
     try {
       const res = await axios.get(`${RATING_API_URL}${driverId}`);
       const formattedRating =
@@ -99,11 +125,14 @@ const Driver = () => {
     const itemToView = data.find((item) => item.id === id);
     setProfileData(itemToView);
     setShowModal(true);
-    await fetchRating(itemToView._id);
+    
+    // Fetch all necessary data including ratings
+    await fetchAverageRating(itemToView._id);
+    await fetchAllRatings(itemToView._id); // Fetch ratings data here
     await fetchViolations(itemToView._id);
     await fetchSubscriptionType(itemToView._id);
   };
-
+  
   const handleViewViolations = () => {
     if (profileData) {
       setShowViolationModal(true);
@@ -164,6 +193,8 @@ const Driver = () => {
     setPage(0);
   };
 
+
+
   return (
     <div className="commuters-main-content">
        {showModal && profileData && (
@@ -171,31 +202,22 @@ const Driver = () => {
           <div className="modal-overlay" onClick={() => setShowModal(false)}></div>
           <div className="driver-modal">
             <div className="modal-content">
-              <span className="close" onClick={() => setShowModal(false)}>&times;</span>
+              <span className="driver-close" onClick={() => setShowModal(false)}>&times;</span>
               <h2 className="profile-title">Driver Profile</h2>
               <div className="driver-profile-container">
               <div className="driver-profile-image">
-                    <img src="image.png" alt="Profile" />
+                    <img
+                      src={profileData.profilePic || "./defaultPic.jpg"}
+                      alt="Profile"
+                      className="profile-pic"
+                    />
                     <div className="profile-info">
-                    <div>
-                        {[...Array(5)].map((_, index) => {
-                          const currentRating = index + 1;
-                          return (
-                            <FaStar
-                              key={index}
-                              size={20}
-                              color={currentRating <= Math.round(rating) ? "gold" : "gray"}
-                              style={{ marginRight: 5 }}
-                            />
-                          );
-                        })}
-                      </div>
+                      <p><strong>Ratings:</strong> {rating}</p>
                       <p><strong>{profileData.name}</strong></p>
                       <p><strong>Last Login:</strong> {profileData.lastLogin || "N/A"}</p>
                       <p>Violation: {violations.length || "0"}</p>
                     </div>
-
-                </div>
+                  </div>
                   <div className="profile-details">
                   <div className="tab-bar-container">
                     {categoryOptions.map((category) => (
@@ -224,26 +246,145 @@ const Driver = () => {
                   {categoryValue === "Vehicle Info" && (
                     <div className="vehicleInfo">
                       <p><strong>Vehicle Information</strong></p>
-                      <p>
-                        <MdDirectionsCar /> <strong>Vehicle Type:</strong> {profileData.vehicleInfo?.vehicleType}
-                      </p>
-                      <p>
-                        <MdCalendarToday /> <strong>Model:</strong> {profileData.vehicleInfo?.model}
-                      </p>
-                      <p>
-                        <MdEvent /> <strong>Year:</strong> {profileData.vehicleInfo?.year}
-                      </p>
-                      <p>
-                        <MdPalette /> <strong>Color:</strong> {profileData.vehicleInfo?.color}
-                      </p>
-                      <p>
-                        <MdSubscriptions /> <strong>Plate Number:</strong> {profileData.vehicleInfo?.plateNumber}
-                      </p>
-                      <p>
-                        <MdAccessTime /> <strong>Capacity:</strong> {profileData.vehicleInfo?.capacity}
-                      </p>
+                      <p><MdDirectionsCar /> <strong>Vehicle Type:</strong> {profileData.vehicleInfo?.vehicleType}</p>
+                      <p><MdCalendarToday /> <strong>Model:</strong> {profileData.vehicleInfo?.model}</p>
+                      <p><MdEvent /> <strong>Year:</strong> {profileData.vehicleInfo?.year}</p>
+                      <p><MdPalette /> <strong>Color:</strong> {profileData.vehicleInfo?.color}</p>
+                      <p><MdSubscriptions /> <strong>Plate Number:</strong> {profileData.vehicleInfo?.plateNumber}</p>
+                      <p><MdAccessTime /> <strong>Capacity:</strong> {profileData.vehicleInfo?.capacity}</p>
                     </div>
-                  )}  
+                  )} 
+                 {categoryValue === "Ratings" && (
+  <div className="ratingsInfo">
+    <p><strong>Ratings Information</strong></p>
+    <TableContainer sx={{ maxHeight: 360, width: "600px", borderRadius: '8px', overflow: 'hidden', boxShadow: '0 2px 10px rgba(0, 0, 0, 0.5)', overflowY: "auto" }}>
+      <Table sx={{ '& .MuiTableCell-root': { textAlign: "center" } }}>
+        <TableHead>
+          <TableRow>
+            <TableCell>Booking</TableCell>
+            <TableCell>Passenger</TableCell>
+            <TableCell>Rating</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {/* Check if the current driver has ratings */}
+          {driverRatings[profileData._id] && driverRatings[profileData._id].length > 0 ? (
+            driverRatings[profileData._id].map((rating, index) => (
+              <TableRow key={index}>
+                <TableCell>{rating.booking || "N/A"}</TableCell>
+                <TableCell>{rating.user?.name || "N/A"}</TableCell>
+                <TableCell>{rating.rating || "N/A"}</TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={3} style={{ textAlign: 'center' }}>No ratings available</TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  </div>
+)}
+
+                  {categoryValue === "Violation" && (
+                  <div className="violationsInfo">
+                  <p><strong>Violation Information</strong></p>
+                  <TableContainer sx={{ maxHeight: 600, borderRadius: '8px', overflow: 'hidden', boxShadow: '0 2px 10px rgba(0, 0, 0, 0.5)' , overflowY:"auto"}}>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Passenger Name</TableCell>
+                          <TableCell>Booking ID</TableCell>
+                          <TableCell>Report</TableCell>
+                          <TableCell>Description</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {violations && violations.length > 0 ? (
+                          violations.map((violation, index) => (
+                            <TableRow key={index}>
+                              <TableCell>{violation.user?.name || "N/A"}</TableCell>
+                              <TableCell>{violation.booking || "N/A"}</TableCell>
+                              <TableCell>{violation.report || "N/A"}</TableCell>
+                              <TableCell>{violation.description || "N/A"}</TableCell>
+                            </TableRow>
+                          ))
+                        ) : (
+                          <TableRow>
+                            <TableCell colSpan={4} style={{ textAlign: 'center' }}>No Violations Available</TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                    </div>
+                  )}
+               {categoryValue === "License Images" && (
+                  <div className="imageInfo">
+                    <p><strong>License Images</strong></p>
+                    <div className="images-container">
+                      <div className="image-wrapper">
+                        <p>License Front:</p>
+                        {profileData.driverInfo?.licenseFront ? (
+                          <img src={profileData.driverInfo.licenseFront} alt="License Front" />
+                        ) : (
+                          <p>No image available</p>
+                        )}
+                      </div>
+                      <div className="image-wrapper">
+                        <p>License Back:</p>
+                        {profileData.driverInfo?.licenseBack ? (
+                          <img src={profileData.driverInfo.licenseBack} alt="License Back" />
+                        ) : (
+                          <p>No image available</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Vehicle Images Category */}
+                {categoryValue === "Vehicle Images" && (
+                  <div className="imageInfo">
+                    <p><strong>Vehicle Images</strong></p>
+                    <div className="images-container">
+                      <div className="image-wrapper">
+                        <p>Vehicle Front:</p>
+                        {profileData.vehicleInfo1?.vehicleFront ? (
+                          <img src={profileData.vehicleInfo1.vehicleFront} alt="Vehicle Front" />
+                        ) : (
+                          <p>No image available</p>
+                        )}
+                      </div>
+                      <div className="image-wrapper">
+                        <p>Vehicle Back:</p>
+                        {profileData.vehicleInfo1?.vehicleBack ? (
+                          <img src={profileData.vehicleInfo1.vehicleBack} alt="Vehicle Back" />
+                        ) : (
+                          <p>No image available</p>
+                        )}
+                      </div>
+                      <div className="image-wrapper">
+                        <p>Vehicle Right:</p>
+                        {profileData.vehicleInfo1?.vehicleRight ? (
+                          <img src={profileData.vehicleInfo1.vehicleRight} alt="Vehicle Right" />
+                        ) : (
+                          <p>No image available</p>
+                        )}
+                      </div>
+                      <div className="image-wrapper">
+                        <p>Vehicle Left:</p>
+                        {profileData.vehicleInfo1?.vehicleLeft ? (
+                          <img src={profileData.vehicleInfo1.vehicleLeft} alt="Vehicle Left" />
+                        ) : (
+                          <p>No image available</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )} 
+
                 </div>
                 </div>
               </div>
@@ -255,8 +396,8 @@ const Driver = () => {
         sx={{
           maxHeight: 685,
           marginLeft: 15,
-          maxWidth: "92%",
-          marginTop: 1.5,
+          maxWidth: "91.5%",
+          marginTop: 3,
           boxShadow: "0 2px 10px rgba(0, 0, 0, 0.3)",
         }}
       >
@@ -298,8 +439,8 @@ const Driver = () => {
           </TableHead>
           <TableBody >
             {paginatedData.map((item) => (
-              <TableRow key={item.id} >
-                <TableCell >{item.id}</TableCell>
+              <TableRow key={item._id} >
+                <TableCell >{item._id}</TableCell>
                 <TableCell>{item.name || "N/A"}</TableCell>
                 <TableCell>{item.number || "N/A"}</TableCell>
                 <TableCell>{item.address || "N/A"}</TableCell>

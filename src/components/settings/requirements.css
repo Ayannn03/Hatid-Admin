@@ -1,0 +1,32 @@
+.require-main-content{
+    margin-left: 230px;
+}
+.require-main-content {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+li {
+    margin: 10px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.add-requirement{
+    margin-left: 10px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+
+
+.req-top-bar{
+    margin-top: 20px;
+    margin-bottom: 20px;
+}

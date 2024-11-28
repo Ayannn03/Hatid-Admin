@@ -13,7 +13,7 @@ import { IoSearch } from "react-icons/io5";
 import "./violations.css";
 
 const API_URL =
-  "https://melodious-conkies-9be892.netlify.app/.netlify/functions/api/violate/violation";
+  "https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/violate/violation";
 
   const Violations = () => {
     const [data, setData] = useState([]);
@@ -95,20 +95,24 @@ const API_URL =
     };
 
     return (
-      <div className="driver-main-content">
+      <div className="violation-main-content">
 
         {showModal && (
           <div className="modal-overlay" onClick={() => setShowModal(false)}>
             <div className="violation-modal" onClick={(e) => e.stopPropagation()}>
               <div className="modal-content">
-                <span className="close" onClick={() => setShowModal(false)}>
+                <span className="violation-close" onClick={() => setShowModal(false)}>
                   &times;
                 </span>
                 {profileData && (
                   <>
                     <div className="violations-details">
                       <div className="violation-image">
-                        <img src="image.png" alt="Profile" />
+                      <img
+                      src={profileData.profilePic || "./defaultPic.jpg"}
+                      alt="Profile"
+                      className="profile-pic"
+                    />
                       </div>
                       <div className="report">
                         <h2>{profileData.driver?.name || "N/A"}</h2>
@@ -116,7 +120,14 @@ const API_URL =
                       </div>
                       <div className="violation-container">
                         <div className="violation-details">
-                          <TableContainer sx={{ maxHeight: 600 }}>
+                          <TableContainer
+                            sx={{
+                              maxHeight: 600,
+                              borderRadius: "8px",  
+                              overflow: "hidden", 
+                              boxShadow: "0 2px 10px rgba(0, 0, 0, 0.5)", 
+                            }}
+                          >
                             <h2 className="violation">Violation Reports</h2>
                             <Table>
                               <TableHead>
@@ -130,18 +141,10 @@ const API_URL =
                               <TableBody>
                                 {profileData.violations.map((violation, index) => (
                                   <TableRow key={index}>
-                                    <TableCell>
-                                      {violation.user?.name || "N/A"}
-                                    </TableCell>
-                                    <TableCell>
-                                      {violation.booking || "N/A"}
-                                    </TableCell>
-                                    <TableCell>
-                                      {violation.report || "N/A"}
-                                    </TableCell>
-                                    <TableCell>
-                                      {violation.description || "N/A"}
-                                    </TableCell>
+                                    <TableCell>{violation.user?.name || "N/A"}</TableCell>
+                                    <TableCell>{violation.booking || "N/A"}</TableCell>
+                                    <TableCell>{violation.report || "N/A"}</TableCell>
+                                    <TableCell>{violation.description || "N/A"}</TableCell>
                                   </TableRow>
                                 ))}
                               </TableBody>

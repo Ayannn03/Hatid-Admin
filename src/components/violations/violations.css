@@ -7,13 +7,24 @@
   padding: 20px 40px;
   background-color: #fff;  
 }
+.violation-main-content{
+  margin-left: 10px;
+}
+
 
 /* Table */
 thead {
-  background: white;
-  border-bottom:#71717a;
-  border-top:1px solid lightgray;
+  background-color: #f9f9f9; 
+  border-bottom: 2px solid #e0e0e0; 
+  border-top: 2px solid #e0e0e0;  
+  border-radius: 8px;
 }
+
+table tr {
+  white-space: nowrap;
+  color: #71717a;
+}
+
 
 table tr {
   white-space: nowrap;
@@ -28,9 +39,6 @@ tbody tr:hover {
   background-color: #f0f0f0;
 }
 
-table tr, table td {
-  border-bottom: none !important;
-}
 
 /* Modal buttons */
 .modal-button {
@@ -59,11 +67,8 @@ table tr, table td {
   background-color: #333;
 }
 
-/* Profile title */
-.profile-title {
-  font-size: 24px;
-  padding: 20px;
-}
+
+
 
 /* Violation image */
 .violation-image img {
@@ -82,6 +87,7 @@ table tr, table td {
   padding: 25px;
   display: flex;
   flex-direction: row;
+  
 }
 
 /* Close button */
@@ -99,65 +105,96 @@ table tr, table td {
   background-color: #0056b3;
 }
 
-/* Modal overlay */
-.driver-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
 
 /* Close icon in modal */
-.close {
+.violation-close {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 25px;
+  right: 15px;
   cursor: pointer;
   font-size: 24px;
   color: #333;
 }
 
-/* View button */
-.view-button {
-  margin: 0 5px;
-  padding: 5px 10px;
-  font-size: 12px;
+.view-button, .close-button {
+  font-size: 14px;
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: 1px solid lightgray;
+  background-color: whitesmoke;
+  color: black;
   cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-/* Violation modal */
+.delete-button{
+  font-size: 14px;
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: 1px solid lightgray;
+  background-color: #FF4D4D;
+  color: black;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.view-button:hover, .close-button:hover {
+  background-color: #0056b3;
+}
+
+/* Modal Styling */
 .violation-modal {
-  border-radius: 8px;
-  background-color: white;
+  border-radius: 12px;
+  background: #64b5f6;
   display: flex;
+  flex-direction: column;
   position: fixed;
-  width: 50%;
-  height: 75%;
+  width: 60%; /* Adjusted width */
+  height: 75%; 
+  padding: 20px; /* Added padding */
   z-index: 9999;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Enhanced shadow */
+}
+
+/* Modal Header */
+.violation-modal .report h2 {
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 5px;
 }
 
 /* Violation section */
 .violation {
-  margin-top: 20px;
-  margin-bottom: 10px;
-  margin-left: 15px;
+  padding: 15px;
+  background-color: white;
 }
 
 /* Report section */
 .report {
   display: flex;
   flex-direction: column;
-  margin-left: 100px;
-  margin-top: -70px;
+  margin-left: 115px;
+  margin-top: -80px;
   margin-bottom: 40px;
 }
+
+.report p{
+  color: white;
+}
+
+
+/* Profile Image */
+.violation-image img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 3px solid #1e90ff;
+
+}
+
+
+

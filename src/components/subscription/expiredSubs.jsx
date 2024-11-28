@@ -16,17 +16,17 @@ import {
 } from '@mui/material';
 import './subscription.css';
 
-const API_URL = 'https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/subs/subscription/';
+const API_URL = 'https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/subs/subscription';
 
-const ActiveTricycleSubscriptions = () => {
+const ExpiredJeepAndTricycleSubscriptions = () => {
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
   const [nameSearch, setNameSearch] = useState('');
+  const [subscriptionTypeFilter, setSubscriptionTypeFilter] = useState(''); // Added subscription type filter
   const [showModal, setShowModal] = useState(false);
   const [selectedSubscription, setSelectedSubscription] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [subscriptionTypeFilter, setSubscriptionTypeFilter] = useState(''); // Filter by subscription type
 
   useEffect(() => {
     fetchData();
@@ -51,6 +51,10 @@ const ActiveTricycleSubscriptions = () => {
     setNameSearch(e.target.value);
   };
 
+  const handleSubscriptionTypeChange = (e) => {
+    setSubscriptionTypeFilter(e.target.value);
+  };
+
   const handleViewReceipt = (sub) => {
     setSelectedSubscription(sub);
     setShowModal(true);
@@ -61,11 +65,7 @@ const ActiveTricycleSubscriptions = () => {
     setSelectedSubscription(null);
   };
 
-  const handleSubscriptionTypeChange = (e) => {
-    setSubscriptionTypeFilter(e.target.value);
-  };
-
-  // Filter the data by vehicle type (tricycle) and apply subscription type filter
+  // Filter expired subscriptions by Jeep, Tricycle, and subscription type
   const filteredData = useMemo(() => {
     return data.filter((item) => {
       const driverName = item.driver?.name?.toLowerCase() || '';
@@ -74,9 +74,9 @@ const ActiveTricycleSubscriptions = () => {
 
       return (
         driverName.includes(nameSearch.toLowerCase()) &&
-        vehicleType === 'tricycle' && // Only filter for tricycle subscriptions
+        (vehicleType === 'jeep' || vehicleType === 'tricycle') &&
         (subscriptionTypeFilter === '' || item.subscriptionType === subscriptionTypeFilter) &&
-        !isExpired // Exclude expired subscriptions
+        isExpired
       );
     });
   }, [data, nameSearch, subscriptionTypeFilter]);
@@ -135,10 +135,13 @@ const ActiveTricycleSubscriptions = () => {
           }}
         >
           <div className="subscription-top-bar">
-            <h1 className="subcription-list">Active Tricycle Subscriptions</h1>
+            <h1 className="subcription-list">Expired Subscriptions</h1>
             <div className="sort-container-subs">
-              <select onChange={handleSubscriptionTypeChange} value={subscriptionTypeFilter}>
-                <option value="">Filter By Subscription Type</option>
+              <select
+                onChange={handleSubscriptionTypeChange}
+                value={subscriptionTypeFilter}
+              >
+                <option value="">All Subscription Types</option>
                 <option value="Monthly">Monthly</option>
                 <option value="Quarterly">Quarterly</option>
                 <option value="Annually">Annually</option>
@@ -171,14 +174,14 @@ const ActiveTricycleSubscriptions = () => {
             <TableBody>
               {paginatedData.length > 0 ? (
                 paginatedData.map((item) => (
-                  <TableRow key={item.id}>
+                  <TableRow key={item._id}>
                     <TableCell>{item.id}</TableCell>
                     <TableCell>{item.driver?.name}</TableCell>
                     <TableCell>{item.subscriptionType}</TableCell>
                     <TableCell>{item.vehicleType}</TableCell>
                     <TableCell>{moment(item.startDate).format('MMMM DD, YYYY')}</TableCell>
                     <TableCell>{moment(item.endDate).format('MMMM DD, YYYY')}</TableCell>
-                    <TableCell>{item.status}</TableCell>
+                    <TableCell>Expired</TableCell>
                     <TableCell>
                       <button
                         className="view-button"
@@ -192,7 +195,7 @@ const ActiveTricycleSubscriptions = () => {
               ) : (
                 <TableRow>
                   <TableCell colSpan={8} align="center">
-                    No Active Tricycle Subscriptions Found.
+                    No Expired Subscriptions Found.
                   </TableCell>
                 </TableRow>
               )}
@@ -218,4 +221,4 @@ const ActiveTricycleSubscriptions = () => {
   );
 };
 
-export default ActiveTricycleSubscriptions;
+export default ExpiredJeepAndTricycleSubscriptions;

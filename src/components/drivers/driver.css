@@ -69,14 +69,14 @@ li a {
 .driver-modal {
   display: flex;
   position: fixed;
-  width: 40%;
-  height: 75%;
+  width: 55%;
+  height: 80%;
   top: 50%;
   left: 50%;
   z-index: 9999;
   border-radius: 8px;
   transform: translate(-50%, -50%);
-  background: #1E90FF;
+  background: #64b5f6;
   background-size: cover;
   background-position: center;
 }
@@ -90,19 +90,19 @@ li a {
 
 .driver-profile-container {
   display: flex;
-  margin-left: 105px;
   margin-top: 120px;
   position: fixed;
-  gap: 40px;
-  font-size: 16px;
+  margin-left: 40px;
+  font-size: 19px;
  
 }
 .driver-profile-image {
   display: flex;
+  position: fixed;
   flex-direction: column;
   justify-content: center;
   margin-top: 30px;
-  position: fixed;
+
   
 }
 
@@ -116,13 +116,10 @@ li a {
   margin-bottom: 20px;
 }
 
-.driver-profile-image button {
-  margin-top: 10px;
-}
 
 /* Profile Details */
 .profile-details p {
-  padding: 10px;
+  padding: 12px;
   border-radius: 5px;
   color: #E5E5E5 ;
 
@@ -137,6 +134,7 @@ li a {
 
 .profile-info p{
   color: #E5E5E5 ;
+  padding: 12px;
 }
 
 /* Close Button */
@@ -154,9 +152,9 @@ li a {
 }
 
 /* Close Icon */
-.close {
+.driver-close {
   position: absolute;
-  top: 10px;
+  top: 20px;
   right: 10px;
   font-size: 24px;
   color: #333;
@@ -224,4 +222,20 @@ li a {
 
 .tab-bar-button:not(.active):hover {
   background-color: rgba(255, 255, 255, 0.2); /* Hover effect */
+}
+.images-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+.image-wrapper {
+  width: 150px;
+  text-align: center;
+}
+.image-wrapper img {
+  width: 100%;
+  height: auto;
+  border: 1px solid #ddd;
+  border-radius: 5px;
 }

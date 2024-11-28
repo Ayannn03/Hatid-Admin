@@ -4,9 +4,10 @@ import axios from 'axios';
 import moment from 'moment';
 import { IoSearch } from "react-icons/io5";
 import './commuters.css';
+import { MdEmail, MdPhone, MdLocationOn, MdCake, MdEvent, MdAccessTime, MdSubscriptions, MdDirectionsCar, MdPalette, MdCalendarToday} from "react-icons/md";
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TablePagination } from '@mui/material';
 
-const API_URL = 'https://melodious-conkies-9be892.netlify.app/.netlify/functions/api/users';
+const API_URL = 'https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/users';
 
 const Commuters = () => {
   const [data, setData] = useState([]);
@@ -97,18 +98,22 @@ const Commuters = () => {
             <h2 className="profile-title">User Profile</h2>
             <div className="profile-container">
               <div className="commuter-profile-image">
-                <img src="image.png" alt="Profile" />
-                <p><strong>Join Date:</strong> {profileData.createdAt ? moment(profileData.createdAt).format("MMMM DD, YYYY") : 'N/A'}</p>
+              <img
+                      src={profileData.profilePic || "./defaultPic.jpg"}
+                      alt="Profile"
+                      className="profile-pic"
+                    />
+                <p>{profileData.name}</p>
                 <p><strong>Last Login:</strong> {profileData.lastLogin}</p>
                 <p><strong>Violation:</strong> {profileData.violations?.length > 0 ? "Yes" : "No"}</p>
               </div>
               <div className="user-details">
                 <p><strong>ID:</strong> {profileData._id}</p>
-                <p><strong>Name:</strong> {profileData.name}</p>
-                <p><strong>Email:</strong> {profileData.email}</p>
-                <p><strong>Phone:</strong> {profileData.number}</p>
-                <p><strong>Address:</strong> {profileData.address}</p>
-                <p><strong>Birthday:</strong> {profileData?.birthday ? moment(profileData.birthday).format("MMMM DD, YYYY") : 'N/A'}</p>
+                <p><MdEmail/> <strong>Email:</strong> {profileData.email}</p>
+                <p> <MdPhone/> <strong>Phone:</strong> {profileData.number}</p>
+                <p><MdLocationOn/> <strong>Address:</strong> {profileData.address}</p>
+                <p><MdCalendarToday/> <strong>Birthday:</strong> {profileData?.birthday ? moment(profileData.birthday).format("MMMM DD, YYYY") : 'N/A'}</p>
+                <p><MdCalendarToday/> <strong>Join Date:</strong> {profileData.createdAt ? moment(profileData.createdAt).format("MMMM DD, YYYY") : 'N/A'}</p>
               </div>
             </div>
           </div>
@@ -123,7 +128,7 @@ const Commuters = () => {
               maxHeight: 680,
               marginLeft: 15,
               marginTop: 3,
-              maxWidth: "92%",
+              maxWidth: "91.5%",
               boxShadow: "0 2px 10px rgba(0, 0, 0, 0.5)",
             }}>
               <div className="commuter-top-bar">
@@ -149,7 +154,7 @@ const Commuters = () => {
           />
         </div>
       </div>
-            <Table sx={{ '& .MuiTableCell-root': { padding: '15px' } }}>
+            <Table sx={{ '& .MuiTableCell-root': { padding: '10px' } }}>
               <TableHead>
                 <TableRow>
                   <TableCell>ID</TableCell>
@@ -162,7 +167,7 @@ const Commuters = () => {
               </TableHead>
               <TableBody>
                 {paginatedData.map((item) => (
-                  <TableRow key={item.id}>
+                  <TableRow key={item._id}>
                     <TableCell>{item.id}</TableCell>
                     <TableCell>{item.name || "N/A"}</TableCell>
                     <TableCell>{item.email || "N/A"}</TableCell>

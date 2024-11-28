@@ -3,9 +3,22 @@
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 40px;
-  background-color: #fff;
- 
- 
+  width: 100%;
+  padding: 25px ;
+  background-color: white;
+}
+
+.subs-main-content{
+  margin-left: 20px;
+}
+
+.sort-container-subs select {
+  padding: 12px;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 14px;
+  margin-left: 450px;
+  border: 1px solid #ccc;
+
 }
 

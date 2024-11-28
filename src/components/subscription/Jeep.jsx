@@ -16,9 +16,9 @@ import {
 } from '@mui/material';
 import './subscription.css';
 
-const API_URL = 'https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/subs/subscription/';
+const API_URL = 'https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/subs/subscription';
 
-const ActiveTricycleSubscriptions = () => {
+const ActiveJeepSubscriptions = () => {
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
   const [nameSearch, setNameSearch] = useState('');
@@ -26,7 +26,7 @@ const ActiveTricycleSubscriptions = () => {
   const [selectedSubscription, setSelectedSubscription] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [subscriptionTypeFilter, setSubscriptionTypeFilter] = useState(''); // Filter by subscription type
+  const [subscriptionTypeFilter, setSubscriptionTypeFilter] = useState(''); // New state for filter
 
   useEffect(() => {
     fetchData();
@@ -65,18 +65,19 @@ const ActiveTricycleSubscriptions = () => {
     setSubscriptionTypeFilter(e.target.value);
   };
 
-  // Filter the data by vehicle type (tricycle) and apply subscription type filter
+  // Apply the subscription type filter here
   const filteredData = useMemo(() => {
     return data.filter((item) => {
       const driverName = item.driver?.name?.toLowerCase() || '';
       const vehicleType = item.vehicleType?.toLowerCase() || '';
       const isExpired = moment().isAfter(moment(item.endDate));
 
+      // Filter by nameSearch and subscriptionTypeFilter
       return (
         driverName.includes(nameSearch.toLowerCase()) &&
-        vehicleType === 'tricycle' && // Only filter for tricycle subscriptions
+        (vehicleType === 'jeep') && // filter for Jeep subscriptions
         (subscriptionTypeFilter === '' || item.subscriptionType === subscriptionTypeFilter) &&
-        !isExpired // Exclude expired subscriptions
+        !isExpired // Don't show expired subscriptions
       );
     });
   }, [data, nameSearch, subscriptionTypeFilter]);
@@ -135,7 +136,7 @@ const ActiveTricycleSubscriptions = () => {
           }}
         >
           <div className="subscription-top-bar">
-            <h1 className="subcription-list">Active Tricycle Subscriptions</h1>
+            <h1 className="subcription-list">Active Jeep Subscriptions</h1>
             <div className="sort-container-subs">
               <select onChange={handleSubscriptionTypeChange} value={subscriptionTypeFilter}>
                 <option value="">Filter By Subscription Type</option>
@@ -171,7 +172,7 @@ const ActiveTricycleSubscriptions = () => {
             <TableBody>
               {paginatedData.length > 0 ? (
                 paginatedData.map((item) => (
-                  <TableRow key={item.id}>
+                  <TableRow key={item._id}>
                     <TableCell>{item.id}</TableCell>
                     <TableCell>{item.driver?.name}</TableCell>
                     <TableCell>{item.subscriptionType}</TableCell>
@@ -192,7 +193,7 @@ const ActiveTricycleSubscriptions = () => {
               ) : (
                 <TableRow>
                   <TableCell colSpan={8} align="center">
-                    No Active Tricycle Subscriptions Found.
+                    No Active Jeep Subscriptions Found.
                   </TableCell>
                 </TableRow>
               )}
@@ -218,4 +219,4 @@ const ActiveTricycleSubscriptions = () => {
   );
 };
 
-export default ActiveTricycleSubscriptions;
+export default ActiveJeepSubscriptions;

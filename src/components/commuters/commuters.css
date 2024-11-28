@@ -22,7 +22,7 @@ body {
 
 .commuters-main-content {
   width: 100%;
-  padding-left: 100px;
+  padding-left: 120px;
   box-sizing: border-box;
 }
 
@@ -69,7 +69,7 @@ body {
 
 .modal {
   border-radius: 8px;
-  background-color: whitesmoke;
+  background: #64b5f6;
   display: flex;
   position: fixed;
   width: 40%;
@@ -122,19 +122,15 @@ body {
   border: none;
 }
 
-p {
-  padding: 5px 0;
-  margin: 0;
-  color: #333;
-}
-
 .profile-container{
   display: flex;
   margin-left: 50px;
   margin-top: 120px;
   position: fixed;
-  gap: 20px;
+  gap: 30px;
   margin-top: 160px;
+  color: white;
+  margin-left: 120px;
 }
 
 .profile-container p{
@@ -152,7 +148,7 @@ p {
   width: 140px;
   height: 140px;
   border-radius: 50%;
-  margin-left: 25px;
+  margin-left: -20px;
   border: 5px solid white; 
   box-shadow: 0 0 0 5px #007bff; 
   margin-bottom: 20px;

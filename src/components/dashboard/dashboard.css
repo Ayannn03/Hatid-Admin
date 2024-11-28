@@ -1,9 +1,9 @@
 .main-container {
   grid-area: main;
   overflow-y: auto;
-  padding: 20px 20px;
+  padding: 20px;
   color: white;
-  margin-left: 200px;
+  margin-left: 230px;
 }
 
 .main-title {
@@ -42,19 +42,19 @@
 }
 
 .card:first-child {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: #90caf9;
 }
 
 .card:nth-child(2) {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: #64b5f6;
 }
 
 .card:nth-child(3) {
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: #42a5f5;
 }
 
 .card:nth-child(4) {
-  background-color: rgba(255, 255, 255, 0.4);
+  background-color: #1e88e5;
 }
 
 .card-inner {
@@ -68,90 +68,140 @@
   color: white;
 }
 
+.chart-and-ratings {
+  display: flex;
+  flex-direction: row; /* Make them horizontal */
+  gap: 40px;
+  margin-top: 40px;
+  justify-content: center;
+  align-items: flex-start;
+}
 
-.calendar {
-  margin: 0 auto;
-  width: 500px;
-  padding: 1rem;
-  background: #349CFF;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-  margin-top: -400px;
-  margin-right: 0;
+.chart-container {
+  width: 100%;
+  max-width: 900px; /* Restrict chart width */
 }
-.calendar header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+
+.ratings-card {
+  background: white;
+  color:  black;
+  border-radius: 8px;
+  padding: 20px;
+  width: 100%;
+  max-width: 350px; /* Set max width for the ratings section */
+  text-align: left;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+ 
 }
-.calendar nav {
-  display: flex;
-  align-items: center;
+
+.ratings-card h3 {
+  font-size: 20px;
+  margin-bottom: 10px;
 }
-.calendar ul {
+
+.ratings-card ul {
   list-style: none;
+  padding: 10px;
+}
+
+.ratings-card li {
   display: flex;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+}
+
+
+.ratings-card li span {
+ margin-top: 0;
+  
+}
+
+.ratings-card li span .star {
+  margin-left: 5px;
+}
+
+.chart{
+  color: black;
+  width: 60%;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 65%;
+
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+ 
+}
+
+.top-driver-card {
+  background: white;
+  color: black;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  max-width: 350px;
   text-align: center;
 }
-.calendar ul li {
-  width: calc(100% / 7);
-  position: relative;
-  z-index: 2;
-  aspect-ratio: 1;
+
+.top-driver-content {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
 }
-#prev,
-#next {
-  width: 20px;
-  height: 20px;
-  position: relative;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-}
-#prev::before,
-#next::before {
-  content: "";
-  width: 50%;
-  height: 50%;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  border-style: solid;
-  border-width: 0.25em 0.25em 0 0;
-  border-color: #ccc;
-}
-#next::before {
-  transform: translate(-50%, -50%) rotate(45deg);
-}
-#prev::before {
-  transform: translate(-50%, -50%) rotate(-135deg);
-}
-#prev:hover::before,
-#next:hover::before {
-  border-color: #000;
-}
-.days {
-  font-weight: 600;
-}
-.dates li.today {
-  color: #fff;
-}
-.dates li.today::before {
-  content: "";
-  width: 2rem;
-  height: 2rem;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: #000;
+
+.profile-pic {
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
-  z-index: -1;
+  object-fit: cover;
+  margin-bottom: 10px;
 }
-.dates li.inactive {
-  color: #ccc;
+
+.top-driver-content h4 {
+  font-size: 1.5rem;
+  margin: 10px 0;
+}
+
+.top-driver-content p {
+  font-size: 1rem;
+  margin: 5px 0;
+}
+
+/* Card styles */
+.main-cards {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  flex: 1;
+}
+
+.card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.card h1 {
+  font-size: 2.5rem;
+}
+
+.card_icon {
+  font-size: 3rem;
+  color: #4c8bff;
+}
+
+.time-range-dropdown {
+  padding: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+  border-radius: 5px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+
 }
