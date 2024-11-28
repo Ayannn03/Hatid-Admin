@@ -33,6 +33,7 @@ const Driver = () => {
   const [categoryValue, setCategoryValue] = useState("Personal Info");
   const [page, setPage] = useState(0); 
   const [rowsPerPage, setRowsPerPage] = useState(10); 
+  const [previewImage, setPreviewImage] = useState(null); // For previewing the clicked image
  
 
 
@@ -133,11 +134,14 @@ const Driver = () => {
     await fetchSubscriptionType(itemToView._id);
   };
   
-  const handleViewViolations = () => {
-    if (profileData) {
-      setShowViolationModal(true);
-    }
+  const handleImagePreview = (imageUrl) => {
+    setPreviewImage(imageUrl); // Set the clicked image URL to state
   };
+
+  const handleClosePreview = () => {
+    setPreviewImage(null); // Close the preview
+  };
+
 
   const handleSort = (e) => {
     const value = e.target.value;
@@ -210,6 +214,7 @@ const Driver = () => {
                       src={profileData.profilePic || "./defaultPic.jpg"}
                       alt="Profile"
                       className="profile-pic"
+                      onClick={() => handleImagePreview(profileData.profilePic )}
                     />
                     <div className="profile-info">
                       <p><strong>Ratings:</strong> {rating}</p>
@@ -327,7 +332,8 @@ const Driver = () => {
                       <div className="image-wrapper">
                         <p>License Front:</p>
                         {profileData.driverInfo?.licenseFront ? (
-                          <img src={profileData.driverInfo.licenseFront} alt="License Front" />
+                          <img src={profileData.driverInfo.licenseFront} alt="License Front" 
+                          onClick={() => handleImagePreview(profileData.driverInfo.licenseFront)}/>
                         ) : (
                           <p>No image available</p>
                         )}
@@ -335,7 +341,8 @@ const Driver = () => {
                       <div className="image-wrapper">
                         <p>License Back:</p>
                         {profileData.driverInfo?.licenseBack ? (
-                          <img src={profileData.driverInfo.licenseBack} alt="License Back" />
+                          <img src={profileData.driverInfo.licenseBack} alt="License Back" 
+                          onClick={() => handleImagePreview(profileData.driverInfo.licenseBack)} />
                         ) : (
                           <p>No image available</p>
                         )}
@@ -344,7 +351,13 @@ const Driver = () => {
                   </div>
                 )}
 
-                {/* Vehicle Images Category */}
+                {previewImage && (
+                        <div className="image-preview-modal" onClick={handleClosePreview}>
+                          <div className="image-preview-container">
+                            <img src={previewImage} alt="Preview" className="image-preview" />
+                          </div>
+                        </div>
+                      )}
                 {categoryValue === "Vehicle Images" && (
                   <div className="imageInfo">
                     <p><strong>Vehicle Images</strong></p>
@@ -352,7 +365,9 @@ const Driver = () => {
                       <div className="image-wrapper">
                         <p>Vehicle Front:</p>
                         {profileData.vehicleInfo1?.vehicleFront ? (
-                          <img src={profileData.vehicleInfo1.vehicleFront} alt="Vehicle Front" />
+                          <img src={profileData.vehicleInfo1.vehicleFront} 
+                          alt="Vehicle Front" 
+                          onClick={() => handleImagePreview(profileData.vehicleInfo1.vehicleFront)}/>
                         ) : (
                           <p>No image available</p>
                         )}
@@ -360,7 +375,9 @@ const Driver = () => {
                       <div className="image-wrapper">
                         <p>Vehicle Back:</p>
                         {profileData.vehicleInfo1?.vehicleBack ? (
-                          <img src={profileData.vehicleInfo1.vehicleBack} alt="Vehicle Back" />
+                          <img src={profileData.vehicleInfo1.vehicleBack} alt="Vehicle Back"   
+                          onClick={() => handleImagePreview(profileData.vehicleInfo1.vehicleBack)}
+                           />
                         ) : (
                           <p>No image available</p>
                         )}
@@ -368,7 +385,8 @@ const Driver = () => {
                       <div className="image-wrapper">
                         <p>Vehicle Right:</p>
                         {profileData.vehicleInfo1?.vehicleRight ? (
-                          <img src={profileData.vehicleInfo1.vehicleRight} alt="Vehicle Right" />
+                          <img src={profileData.vehicleInfo1.vehicleRight} alt="Vehicle Right" 
+                          onClick={() => handleImagePreview(profileData.vehicleInfo1.vehicleRight)}/>
                         ) : (
                           <p>No image available</p>
                         )}
@@ -376,7 +394,8 @@ const Driver = () => {
                       <div className="image-wrapper">
                         <p>Vehicle Left:</p>
                         {profileData.vehicleInfo1?.vehicleLeft ? (
-                          <img src={profileData.vehicleInfo1.vehicleLeft} alt="Vehicle Left" />
+                          <img src={profileData.vehicleInfo1.vehicleLeft} alt="Vehicle Left" 
+                          onClick={() => handleImagePreview(profileData.vehicleInfo1.vehicleLeft)} />
                         ) : (
                           <p>No image available</p>
                         )}
@@ -384,7 +403,6 @@ const Driver = () => {
                     </div>
                   </div>
                 )} 
-
                 </div>
                 </div>
               </div>

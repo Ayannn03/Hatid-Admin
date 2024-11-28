@@ -26,6 +26,7 @@ const SubscriptionReq = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [subscriptionTypeFilter, setSubscriptionTypeFilter] = useState(''); 
+  const [previewImage, setPreviewImage] = useState(null); // State for image preview
 
   // Fetch data from the API
   useEffect(() => {
@@ -47,10 +48,6 @@ const SubscriptionReq = () => {
     }
   };
 
-  // Handle search input change
-  const handleSearch = (e) => {
-    setNameSearch(e.target.value);
-  };
 
   // Handle accepting a payment for a subscription
   const handleAcceptPayment = async (subscriptionId) => {
@@ -110,12 +107,17 @@ const SubscriptionReq = () => {
   const handleViewReceipt = (sub) => {
     setSelectedSubscription(sub);
     setShowModal(true);
+    setPreviewImage(null); // Reset preview image when a new subscription is clicked
   };
 
-  // Close the modal
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedSubscription(null);
+    setPreviewImage(null); // Reset preview image when closing the modal
+  };
+
+  const handlePreviewImage = (image) => {
+    setPreviewImage(image); // Set the image to be previewed
   };
 
   const handleSubscriptionTypeChange = (e) => {
@@ -138,7 +140,8 @@ const SubscriptionReq = () => {
                   <img
                     src={selectedSubscription.receipt}
                     alt="Receipt"
-                    style={{ width: '100%', maxHeight: '300px', objectFit: 'contain' }}
+                    style={{ width: '100%', maxHeight: '300px', objectFit: 'contain', cursor: 'pointer' }}
+                    onClick={() => handlePreviewImage(selectedSubscription.receipt)} // Click to preview image
                   />
                 </div>
               ) : (
@@ -150,6 +153,25 @@ const SubscriptionReq = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {previewImage && (
+        <Dialog open={!!previewImage} onClose={() => setPreviewImage(null)} maxWidth="sm" fullWidth>
+          <DialogTitle>Image Preview</DialogTitle>
+          <DialogContent>
+            <img
+              src={previewImage}
+              alt="Preview"
+              style={{
+                width: '100%',
+                maxHeight: '500px',
+                objectFit: 'contain',
+                marginBottom: '20px',
+                cursor: 'zoom-out', // To indicate it can be closed
+              }}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Subscription Table */}
       <div className="subscriptions-table">

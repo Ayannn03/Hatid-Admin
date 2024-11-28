@@ -29,6 +29,7 @@ export default function Applications() {
   const [selectedApplicationId, setSelectedApplicationId] = useState(null); // Store application ID for confirmation
   const [selectedImages, setSelectedImages] = useState([]); // Store selected images for modal
   const [confirmModalOpen, setConfirmModalOpen] = useState(false); // Modal for confirming approval
+  const [previewImage, setPreviewImage] = useState(null); // For previewing the clicked image
 
   useEffect(() => {
     fetchData();
@@ -45,7 +46,6 @@ export default function Applications() {
       setError(null); // Clear error on successful fetch
     } catch (error) {
       console.error("Error fetching data:", error);
-      setError("Failed to load applications. Please try again.");
     }
   };
 
@@ -84,12 +84,14 @@ export default function Applications() {
     setSelectedApplicationId(applicationId);
     setSelectedImages(images);
     setModalOpen(true);
+    setPreviewImage(null); // Reset preview image when opening the modal
   };
 
   const closeModal = () => {
     setModalOpen(false);
     setSelectedApplicationId(null);
     setSelectedImages([]);
+    setPreviewImage(null); // Reset preview image when closing the modal
   };
 
   const openConfirmModal = (applicationId) => {
@@ -123,13 +125,38 @@ export default function Applications() {
                     border: "1px solid #ddd",
                     borderRadius: "8px",
                     padding: "8px",
+                    cursor: "pointer", // Change cursor to pointer to indicate it's clickable
                   }}
+                  onClick={() => setPreviewImage(image)}  // Set the clicked image for preview
                 />
               ))
             ) : (
               <p>No images available.</p>
             )}
           </div>
+
+          {/* Display Preview of Clicked Image */}
+          {previewImage && (
+            <div style={{
+              marginTop: "20px",
+              textAlign: "center",
+            }}>
+              <h3>Preview</h3>
+              <img
+                src={previewImage}
+                alt="Preview"
+                style={{
+                  width: "80%",
+                  maxWidth: "500px",
+                  height: "auto",
+                  objectFit: "contain",
+                  border: "1px solid #ddd",
+                  borderRadius: "8px",
+                  padding: "8px",
+                }}
+              />
+            </div>
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={closeModal} color="primary">
