@@ -86,28 +86,52 @@ const Driver = () => {
     }
   }, []);
 
+
+
   const fetchAllRatings = useCallback(async (driverId) => {
     try {
       const res = await axios.get(`${RATING_API_URL}${driverId}`);
       if (res.data.status === "ok") {
-        setDriverRatings(prevRatings => ({
+        const ratingsWithPassengerDetails = await Promise.all(
+          res.data.data.ratings.map(async (rating) => {
+            const passengerName = rating.user
+              ? await fetchPassengerDetails(rating.user)
+              : "N/A";
+            return { ...rating, passengerName };
+          })
+        );
+        setDriverRatings((prevRatings) => ({
           ...prevRatings,
-          [driverId]: res.data.data.ratings // Store ratings for each driver
+          [driverId]: ratingsWithPassengerDetails,
         }));
       } else {
-        setDriverRatings(prevRatings => ({
+        setDriverRatings((prevRatings) => ({
           ...prevRatings,
-          [driverId]: [] // If no ratings, store an empty array
+          [driverId]: [],
         }));
       }
     } catch (error) {
-      console.error("Error fetching all ratings:", error);
-      setDriverRatings(prevRatings => ({
+      console.error("Error fetching ratings:", error);
+      setDriverRatings((prevRatings) => ({
         ...prevRatings,
-        [driverId]: [] // If error occurs, store an empty array
+        [driverId]: [],
       }));
     }
   }, []);
+  
+
+    const fetchPassengerDetails = async (userId) => {
+      try {
+        const res = await axios.get(`https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/users/${userId}`);
+        return res.data.name || "N/A";
+      } catch (error) {
+        console.error("Error fetching passenger details:", error);
+        return "N/A";
+      }
+    };
+    
+    
+    
   
   
   const fetchAverageRating = useCallback(async (driverId) => {
@@ -260,38 +284,39 @@ const Driver = () => {
                     </div>
                   )} 
                  {categoryValue === "Ratings" && (
-  <div className="ratingsInfo">
-    <p><strong>Ratings Information</strong></p>
-    <TableContainer sx={{ maxHeight: 360, width: "600px", borderRadius: '8px', overflow: 'hidden', boxShadow: '0 2px 10px rgba(0, 0, 0, 0.5)', overflowY: "auto" }}>
-      <Table sx={{ '& .MuiTableCell-root': { textAlign: "center" } }}>
-        <TableHead>
-          <TableRow>
-            <TableCell>Booking</TableCell>
-            <TableCell>Passenger</TableCell>
-            <TableCell>Rating</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {/* Check if the current driver has ratings */}
-          {driverRatings[profileData._id] && driverRatings[profileData._id].length > 0 ? (
-            driverRatings[profileData._id].map((rating, index) => (
-              <TableRow key={index}>
-                <TableCell>{rating.booking || "N/A"}</TableCell>
-                <TableCell>{rating.user?.name || "N/A"}</TableCell>
-                <TableCell>{rating.rating || "N/A"}</TableCell>
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={3} style={{ textAlign: 'center' }}>No ratings available</TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  </div>
-)}
+                      <div className="ratingsInfo">
+                        <p><strong>Ratings Information</strong></p>
+                        <TableContainer sx={{ maxHeight: 360, width: "600px", borderRadius: '8px', overflow: 'hidden', boxShadow: '0 2px 10px rgba(0, 0, 0, 0.5)', overflowY: "auto" }}>
+                          <Table sx={{ '& .MuiTableCell-root': { textAlign: "center" } }}>
+                            <TableHead>
+                              <TableRow>
+                                <TableCell>Booking</TableCell>
+                                <TableCell>Passenger</TableCell>
+                                <TableCell>Rating</TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {driverRatings[profileData._id] && driverRatings[profileData._id].length > 0 ? (
+                              driverRatings[profileData._id].map((rating, index) => (
+                                <TableRow key={index}>
+                                  <TableCell>{rating.booking || "N/A"}</TableCell>
+                                  <TableCell>{rating.passengerName || "N/A"}</TableCell>
+                                  <TableCell>{rating.rating || "N/A"}</TableCell>
+                                </TableRow>
+                                  ))
+                                ) : (
+                                  <TableRow>
+                                    <TableCell colSpan={3} style={{ textAlign: 'center' }}>
+                                      No ratings available
+                                    </TableCell>
+                                  </TableRow>
+                                )}
 
+                            </TableBody>
+                          </Table>
+                        </TableContainer>
+                      </div>
+                    )} 
                   {categoryValue === "Violation" && (
                   <div className="violationsInfo">
                   <p><strong>Violation Information</strong></p>

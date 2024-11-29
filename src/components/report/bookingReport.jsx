@@ -97,7 +97,7 @@ const BookingReport = () => {
         })
       );
 
-      // Group bookings by passenger name
+      // Group bookings by passenger name and location
       const groupedByName = groupBookingsByName(bookingsWithAddresses);
 
       // Flatten the grouped data for pagination
@@ -111,24 +111,33 @@ const BookingReport = () => {
     }
   };
 
-  // Group bookings by passenger name
+  // Group bookings by passenger name and location
   const groupBookingsByName = (bookings) => {
     const grouped = {};
 
     bookings.forEach((booking) => {
       const passengerName = booking.name;
+      const pickupAddress = booking.pickupAddress;
+      const destinationAddress = booking.destinationAddress;
 
+      // Initialize a new passenger if not present
       if (!grouped[passengerName]) {
-        grouped[passengerName] = {
-          bookings: [],
-          pickupAddresses: new Set(),
-          destinationAddresses: new Set(),
+        grouped[passengerName] = {};
+      }
+
+      // Create a unique key for each pickup-destination pair
+      const locationKey = `${pickupAddress} -> ${destinationAddress}`;
+
+      if (!grouped[passengerName][locationKey]) {
+        grouped[passengerName][locationKey] = {
+          pickupAddress,
+          destinationAddress,
+          bookingCount: 0,
         };
       }
 
-      grouped[passengerName].bookings.push(booking);
-      grouped[passengerName].pickupAddresses.add(booking.pickupAddress);
-      grouped[passengerName].destinationAddresses.add(booking.destinationAddress);
+      // Increment booking count for the specific location
+      grouped[passengerName][locationKey].bookingCount++;
     });
 
     return grouped;
@@ -139,12 +148,15 @@ const BookingReport = () => {
     const flattened = [];
 
     Object.keys(groupedData).forEach((passengerName) => {
-      const { bookings, pickupAddresses, destinationAddresses } = groupedData[passengerName];
-      flattened.push({
-        passengerName,
-        pickupAddresses: Array.from(pickupAddresses).join(", "), // Combine multiple addresses
-        destinationAddresses: Array.from(destinationAddresses).join(", "),
-        bookingCount: bookings.length, // Total bookings
+      const locations = groupedData[passengerName];
+      Object.keys(locations).forEach((locationKey) => {
+        const { pickupAddress, destinationAddress, bookingCount } = locations[locationKey];
+        flattened.push({
+          passengerName,
+          pickupAddress,
+          destinationAddress,
+          bookingCount,
+        });
       });
     });
 
@@ -170,7 +182,7 @@ const BookingReport = () => {
 
     // Add data to the rows
     data.forEach((row) => {
-      tableRows.push([row.passengerName, row.pickupAddresses, row.destinationAddresses, row.bookingCount]);
+      tableRows.push([row.passengerName, row.pickupAddress, row.destinationAddress, row.bookingCount]);
     });
 
     doc.autoTable({
@@ -190,7 +202,7 @@ const BookingReport = () => {
           <h1>Booking Report</h1>
           <Button
             variant="contained"
-            onClick={handleDownloadPDF} // Changed to download as PDF
+            onClick={handleDownloadPDF}
             className="download-button"
             sx={{ marginBottom: 2 }}
           >
@@ -236,8 +248,8 @@ const BookingReport = () => {
                     .map((row, index) => (
                       <TableRow key={index}>
                         <TableCell>{row.passengerName}</TableCell>
-                        <TableCell>{row.pickupAddresses}</TableCell>
-                        <TableCell>{row.destinationAddresses}</TableCell>
+                        <TableCell>{row.pickupAddress}</TableCell>
+                        <TableCell>{row.destinationAddress}</TableCell>
                         <TableCell>{row.bookingCount}</TableCell>
                       </TableRow>
                     ))}
@@ -257,8 +269,7 @@ const BookingReport = () => {
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </div>
-
-      <TabBar />
+      <TabBar/>
     </div>
   );
 };
