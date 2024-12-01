@@ -33,7 +33,8 @@ const Driver = () => {
   const [categoryValue, setCategoryValue] = useState("Personal Info");
   const [page, setPage] = useState(0); 
   const [rowsPerPage, setRowsPerPage] = useState(10); 
-  const [previewImage, setPreviewImage] = useState(null); // For previewing the clicked image
+  const [previewImage, setPreviewImage] = useState(null);
+  const [vehicleFilter, setVehicleFilter] = useState(""); 
  
 
 
@@ -48,25 +49,37 @@ const Driver = () => {
     setLoading(true);
     try {
       const driverResponse = await axios.get(DRIVER_API_URL);
-
       const driverData = driverResponse.data;
 
-      const dataWithAdditionalInfo = driverData.map((driver, index) => ({
-        ...driver,
-        id: index + 1,
-        vehicleInfo: driver.vehicleInfo2,
-      }));
+      // Add additional info and sort by newest (descending order)
+      const sortedData = driverData
+        .map((driver, index) => ({
+          ...driver,
+          id: index + 1,
+          vehicleInfo: driver.vehicleInfo2,
+        }))
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Sort by `createdAt`
 
-      setData(dataWithAdditionalInfo);
+      setData(sortedData);
+      setFilteredData(sortedData); // Initialize filtered data
       setError(null);
     } catch (error) {
       console.error("Error fetching data:", error);
       setError("Error fetching data");
-    }finally {
+    } finally {
       setLoading(false);
     }
   }, []);
 
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+  
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+  
+  
   const fetchViolations = useCallback(async (driverId) => {
     try {
       const res = await axios.get(`${VIOLATIONS_API_URL}${driverId}`);
@@ -183,7 +196,6 @@ const Driver = () => {
     setPreviewImage(null); // Close the preview
   };
 
-
   const handleSort = (e) => {
     const value = e.target.value;
     setSortValue(value);
@@ -206,18 +218,22 @@ const Driver = () => {
 
   const handleSearch = (e) => {
     setNameSearch(e.target.value);
-    setVehicleSearch(e.target.value);
+  };
+
+
+  const handleVehicleFilterChange = (e) => {
+    setVehicleFilter(e.target.value);
   };
 
   const filteredData = useMemo(() => {
     return data.filter((item) => {
-      const nameMatch = item.name.toLowerCase().includes(nameSearch.toLowerCase());
-      const vehicleMatch = item.vehicleInfo?.vehicleType
-        .toLowerCase()
-        .includes(vehicleSearch.toLowerCase());
-      return nameMatch || vehicleMatch;
+      const nameMatch = item.name?.toLowerCase().includes(nameSearch.toLowerCase());
+      const vehicleMatch = vehicleFilter
+        ? item.vehicleInfo?.vehicleType?.toLowerCase() === vehicleFilter.toLowerCase()
+        : true;
+      return nameMatch && vehicleMatch;
     });
-  }, [data, nameSearch, vehicleSearch]);
+  }, [data, nameSearch, vehicleFilter]);
 
   useEffect(() => {
     fetchData();
@@ -477,7 +493,18 @@ const Driver = () => {
             </option>
           ))}
         </select>
+
+        <select
+            value={vehicleFilter}
+            onChange={handleVehicleFilterChange}
+            className="vehicle-dropdown"
+          >
+            <option value="">All Vehicles</option>
+            <option value="Jeep">Jeep</option>
+            <option value="Tricycle">Tricycle</option>
+          </select>
       </div>
+
       <div className="search-bar-container">
         <input
           className="input-design"

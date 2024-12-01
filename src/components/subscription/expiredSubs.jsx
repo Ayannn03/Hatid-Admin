@@ -44,8 +44,9 @@ const ExpiredJeepAndTricycleSubscriptions = () => {
         ...item,
         id: index + 1,
       }));
+      const sortedData = dataWithId.sort((a, b) => moment(b.startDate).diff(moment(a.startDate)));
+      setData(sortedData);
       setData(dataWithId);
-      setError(null);
     } catch (error) {
       console.error('Error fetching data:', error);
       setError('Error fetching data');

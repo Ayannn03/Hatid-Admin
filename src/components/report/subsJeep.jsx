@@ -13,11 +13,21 @@ import {
   CircularProgress,
   Button,
 } from '@mui/material';
-import jsPDF from 'jspdf'; // Import jsPDF
-import 'jspdf-autotable'; // Import AutoTable plugin
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import './driverReport.css';
 
 const API_URL = 'https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/subs/subscription';
+
+// Reusable loading function
+const handleLoading = async (loadingSetter, callback) => {
+  try {
+    loadingSetter(true);
+    await callback();
+  } finally {
+    loadingSetter(false);
+  }
+};
 
 const ActiveJeepSubscriptions = () => {
   const [data, setData] = useState([]);
@@ -28,12 +38,11 @@ const ActiveJeepSubscriptions = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchData();
+    handleLoading(setLoading, fetchData);
   }, []);
 
   const fetchData = async () => {
     try {
-      setLoading(true);
       const response = await axios.get(API_URL);
       const dataWithId = response.data.map((item, index) => ({
         ...item,
@@ -44,8 +53,6 @@ const ActiveJeepSubscriptions = () => {
     } catch (error) {
       console.error('Error fetching data:', error);
       setError('Error fetching data');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -81,11 +88,9 @@ const ActiveJeepSubscriptions = () => {
   const handleDownloadPDF = () => {
     const doc = new jsPDF();
 
-    // Add Title
     doc.setFontSize(18);
     doc.text('Active Jeep Subscriptions Report', 14, 20);
 
-    // Add Table
     const tableData = filteredData.map((item) => [
       item.id,
       item.driver?.name || 'N/A',
@@ -103,11 +108,10 @@ const ActiveJeepSubscriptions = () => {
       body: tableData,
       startY: 30,
       styles: { fontSize: 10 },
-      headStyles: { fillColor: [22, 160, 133] }, // Header background color
+      headStyles: { fillColor: [22, 160, 133] },
       margin: { left: 14, right: 14 },
     });
 
-    // Save PDF
     doc.save('Active_Jeep_Subscriptions_Report.pdf');
   };
 

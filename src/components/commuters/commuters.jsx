@@ -3,13 +3,15 @@ import TabBar from '../tab-bar/tabBar';
 import axios from 'axios';
 import moment from 'moment';
 import { IoSearch } from "react-icons/io5";
-import './commuters.css';
-import { MdEmail, MdPhone, MdLocationOn, MdCalendarToday} from "react-icons/md";
+import { MdEmail, MdPhone, MdLocationOn, MdCalendarToday } from "react-icons/md";
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TablePagination, CircularProgress } from '@mui/material';
+import './commuters.css';
 
+// API URL for fetching commuter data
 const API_URL = 'https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/users';
 
 const Commuters = () => {
+  // State Variables
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
   const [nameSearch, setNameSearch] = useState('');
@@ -20,8 +22,10 @@ const Commuters = () => {
   const [page, setPage] = useState(0); 
   const [rowsPerPage, setRowsPerPage] = useState(10); 
 
+  // Sorting options
   const sortOptions = ["Name", "Address"];
 
+  // Fetch Data from API
   useEffect(() => {
     fetchData();
   }, []);
@@ -31,7 +35,11 @@ const Commuters = () => {
     try {
       const response = await axios.get(API_URL);
       const dataWithId = response.data.map((item, index) => ({ ...item, id: index + 1 }));
-      setData(dataWithId);
+
+      // Sort data by `createdAt` field in descending order
+      const sortedData = dataWithId.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      setData(sortedData);
       setError(null);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -41,24 +49,21 @@ const Commuters = () => {
     }
   };
 
-  const handleViewProfile = (id) => {
-    const itemToView = data.find((item) => item.id === id);
-    setProfileData(itemToView);
-    setShowModal(true);
-  };
-
+  // Handle search input
   const handleSearch = (e) => {
     setNameSearch(e.target.value);
   };
 
+  // Filtered Data based on search input
   const filteredData = data.filter((item) =>
     item.name.toLowerCase().includes(nameSearch.toLowerCase())
   );
 
+  // Handle sorting by selected value
   const handleSort = (e) => {
     const value = e.target.value;
     setSortValue(value);
-  
+
     const sortedData = [...filteredData].sort((a, b) => {
       if (value === "Name") {
         return a.name.localeCompare(b.name);
@@ -67,10 +72,11 @@ const Commuters = () => {
       }
       return 0;
     });
-  
+
     setData(sortedData);
   };
 
+  // Pagination logic
   const paginatedData = useMemo(() => {
     return filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
   }, [filteredData, page, rowsPerPage]);
@@ -83,12 +89,22 @@ const Commuters = () => {
     setRowsPerPage(+event.target.value);
     setPage(0);
   };
-  
+
+  // View profile modal logic
+  const handleViewProfile = (id) => {
+    const itemToView = data.find((item) => item.id === id);
+    setProfileData(itemToView);
+    setShowModal(true);
+  };
+
   return (
     <div className='commuters-main-content'>
+      {/* Modal overlay */}
       {showModal && profileData && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}></div>
       )}
+
+      {/* Profile Modal */}
       {showModal && profileData && (
         <div className="modal">
           <div className="modal-content">
@@ -97,32 +113,35 @@ const Commuters = () => {
             </button>
             <h2 className="profile-title">User Profile</h2>
             <div className="profile-container">
+              {/* Profile Picture and Details */}
               <div className="commuter-profile-image">
                 <div className='commuter-image'>
-                <img
-                      src={profileData.profilePic || "./defaultPic.jpg"}
-                      alt="Profile"
-                      className="profile-pic"
-                    />
-                <p>{profileData.name}</p>
-                <p><strong>Last Login:</strong> {profileData.lastLogin}</p>
-                <p><strong>Violation:</strong> {profileData.violations?.length > 0 ? "Yes" : "No"}</p>
+                  <img
+                    src={profileData.profilePic || "./defaultPic.jpg"}
+                    alt="Profile"
+                    className="profile-pic"
+                  />
+                  <p>{profileData.name}</p>
+                  <p><strong>Last Login:</strong> {profileData.lastLogin}</p>
+                  <p><strong>Violation:</strong> {profileData.violations?.length > 0 ? "Yes" : "No"}</p>
                 </div>
               </div>
               <div className="user-details">
                 <p><strong>ID:</strong> <br />{profileData._id}</p>
-                <p><MdEmail/> <strong>Email:</strong><br /> {profileData.email}</p>
-                <p> <MdPhone/> <strong>Phone:</strong><br /> {profileData.number}</p>
-                <p><MdLocationOn/> <strong>Address:</strong> <br />{profileData.address}</p>
-                <p><MdCalendarToday/> <strong>Birthday:</strong> <br />{profileData?.birthday ? moment(profileData.birthday).format("MMMM DD, YYYY") : 'N/A'}</p>
-                <p><MdCalendarToday/> <strong>Join Date:</strong> <br />{profileData.createdAt ? moment(profileData.createdAt).format("MMMM DD, YYYY") : 'N/A'}</p>
+                <p><MdEmail /> <strong>Email:</strong><br /> {profileData.email}</p>
+                <p><MdPhone /> <strong>Phone:</strong><br /> {profileData.number}</p>
+                <p><MdLocationOn /> <strong>Address:</strong><br /> {profileData.address}</p>
+                <p><MdCalendarToday /> <strong>Birthday:</strong><br /> {profileData?.birthday ? moment(profileData.birthday).format("MMMM DD, YYYY") : 'N/A'}</p>
+                <p><MdCalendarToday /> <strong>Join Date:</strong><br /> {profileData.createdAt ? moment(profileData.createdAt).format("MMMM DD, YYYY") : 'N/A'}</p>
               </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* Loading Indicator */}
       {loading ? (
-       <CircularProgress sx={{ display: "block", margin: "auto", marginTop: 4 }} />
+        <CircularProgress sx={{ display: "block", margin: "auto", marginTop: 4 }} />
       ) : (
         <div className='passenger-table'>
           <TableContainer
@@ -132,30 +151,34 @@ const Commuters = () => {
               marginTop: 3,
               maxWidth: "91.5%",
               boxShadow: "0 2px 10px rgba(0, 0, 0, 0.5)",
-            }}>
-              <div className="commuter-top-bar">
-        <h1 className="commuters-list">Commuters List</h1>
-        <div className='sort-container'>
-          <select onChange={handleSort} value={sortValue}>
-            <option value="">Sort By:</option>
-            {sortOptions.map((item, index) => (
-              <option value={item} key={index}>
-                {item}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="search-bar-container">
-          <IoSearch className="search-icon"/>
-          <input
-            className="input-design"
-            type="text"
-            placeholder= "Search"
-            value={nameSearch}
-            onChange={handleSearch}
-          />
-        </div>
-      </div>
+            }}
+          >
+            {/* Table Header and Sorting/Search Controls */}
+            <div className="commuter-top-bar">
+              <h1 className="commuters-list">Commuters List</h1>
+              <div className='sort-container'>
+                <select onChange={handleSort} value={sortValue}>
+                  <option value="">Sort By:</option>
+                  {sortOptions.map((item, index) => (
+                    <option value={item} key={index}>
+                      {item}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="search-bar-container">
+                <IoSearch className="search-icon"/>
+                <input
+                  className="input-design"
+                  type="text"
+                  placeholder="Search"
+                  value={nameSearch}
+                  onChange={handleSearch}
+                />
+              </div>
+            </div>
+
+            {/* Table Structure */}
             <Table sx={{ '& .MuiTableCell-root': { padding: '10px' } }}>
               <TableHead>
                 <TableRow>
@@ -182,8 +205,9 @@ const Commuters = () => {
                 ))}
               </TableBody>
             </Table>
-          
           </TableContainer>
+
+          {/* Pagination Controls */}
           <TablePagination
             rowsPerPageOptions={[10, 20, 30]}
             component="div"
@@ -193,9 +217,12 @@ const Commuters = () => {
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleRowsPerPageChange}
           />
+          
+          {/* Error Message */}
           {error && <div className="error-message">{error}</div>}
         </div>
       )}
+
       <TabBar />
     </div>
   );

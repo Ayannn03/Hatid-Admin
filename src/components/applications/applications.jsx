@@ -44,16 +44,19 @@ export default function Applications() {
       const response = await axios.get(APPLICATION_API_URL);
       const dataWithId = response.data.map((item, index) => ({
         ...item,
-        id: item._id || index + 1, // Use _id if available, otherwise use index + 1
+        id: item._id || index + 1, 
       }));
-      setApplications(dataWithId);
+  
+      const sortedData = dataWithId.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      setApplications(sortedData);
       setError(null); // Clear error on successful fetch
     } catch (error) {
       console.error("Error fetching data:", error);
-    } finally{
+    } finally {
       setLoading(false);
     }
   };
+  
 
   const handleSearch = (e) => {
     setNameSearch(e.target.value);

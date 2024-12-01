@@ -13,7 +13,7 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  CircularProgress, // Import CircularProgress for the loading spinner
+  CircularProgress,
 } from '@mui/material';
 import './subscription.css';
 
@@ -43,7 +43,9 @@ const ActiveJeepSubscriptions = () => {
         ...item,
         id: index + 1,
       }));
-      setData(dataWithId);
+      // Sort data by startDate in descending order (newest first)
+      const sortedData = dataWithId.sort((a, b) => moment(b.startDate).diff(moment(a.startDate)));
+      setData(sortedData);
       setError(null);
     } catch (error) {
       console.error('Error fetching data:', error);

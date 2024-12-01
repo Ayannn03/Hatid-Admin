@@ -34,7 +34,6 @@ const ActiveTricycleSubscriptions = () => {
   useEffect(() => {
     fetchData();
   }, []);
-
   const fetchData = async () => {
     try {
       setLoading(true); // Set loading to true before fetching data
@@ -43,7 +42,9 @@ const ActiveTricycleSubscriptions = () => {
         ...item,
         id: index + 1,
       }));
-      setData(dataWithId);
+      // Sort data by startDate in descending order (newest first)
+      const sortedData = dataWithId.sort((a, b) => moment(b.startDate).diff(moment(a.startDate)));
+      setData(sortedData);
       setError(null);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -52,7 +53,7 @@ const ActiveTricycleSubscriptions = () => {
       setLoading(false); // Set loading to false after data is fetched (or error occurs)
     }
   };
-
+  
   const handleSearch = (e) => {
     setNameSearch(e.target.value);
   };

@@ -14,9 +14,10 @@ import {
 } from "@mui/material";
 import "./driverReport.css";
 import jsPDF from "jspdf";
-import "jspdf-autotable"; // Import jsPDF Autotable plugin
+import "jspdf-autotable";
 
-const API_URL = "https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/users";
+const API_URL =
+  "https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/users";
 
 const Commuters = () => {
   const [data, setData] = useState([]);
@@ -33,12 +34,11 @@ const Commuters = () => {
     setLoading(true);
     try {
       const response = await axios.get(API_URL);
-      const dataWithId = response.data.map((item, index) => ({
-        ...item,
-        id: index + 1,
-      }));
-      setData(dataWithId);
-      setError(null);
+      const sortedData = response.data
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Sort by createdAt in descending order
+  
+      setData(sortedData);
+      setError(null); // Clear error if data is fetched successfully
     } catch (error) {
       console.error("Error fetching data:", error);
       setError("Error fetching data");
@@ -46,13 +46,17 @@ const Commuters = () => {
       setLoading(false);
     }
   };
+  
 
   const filteredData = useMemo(() => {
     return data.filter((item) => item.name && item.email);
   }, [data]);
 
   const paginatedData = useMemo(() => {
-    return filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    return filteredData.slice(
+      page * rowsPerPage,
+      page * rowsPerPage + rowsPerPage
+    );
   }, [filteredData, page, rowsPerPage]);
 
   const handleChangePage = (event, newPage) => {
@@ -78,15 +82,15 @@ const Commuters = () => {
     ]);
 
     doc.autoTable({
-      head: [["ID", "Name", "Email", "Phone", "Address"]], // Table headers
-      body: tableData, // Table data
-      startY: 30, // Start position for the table
-      styles: { fontSize: 10 }, // Font size for the table
-      headStyles: { fillColor: [22, 160, 133] }, // Header background color
-      margin: { left: 14, right: 14 }, // Margins for the table
+      head: [["ID", "Name", "Email", "Phone", "Address"]],
+      body: tableData,
+      startY: 30,
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [22, 160, 133] },
+      margin: { left: 14, right: 14 },
     });
 
-    doc.save("Commuters_Report.pdf"); // Save the PDF file
+    doc.save("Commuters_Report.pdf");
   };
 
   return (
@@ -150,11 +154,11 @@ const Commuters = () => {
           color="primary"
           onClick={handleDownloadPDF}
           style={{
-            marginTop: '20px',
-            display: 'block',
-            marginLeft: '220px',
-            marginRight: 'auto',
-            width: '200px',
+            marginTop: "20px",
+            display: "block",
+            marginLeft: "220px",
+            marginRight: "auto",
+            width: "200px",
           }}
         >
           Download as PDF

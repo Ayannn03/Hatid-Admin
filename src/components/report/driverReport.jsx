@@ -21,8 +21,10 @@ const DRIVER_API_URL =
 
 function Report() {
   const [data, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [vehicleFilter, setVehicleFilter] = useState(""); // State for vehicle filter
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -30,13 +32,17 @@ function Report() {
       const driverResponse = await axios.get(DRIVER_API_URL);
       const driverData = driverResponse.data;
 
-      const dataWithAdditionalInfo = driverData.map((driver, index) => ({
-        ...driver,
-        id: index + 1,
-        vehicleInfo: driver.vehicleInfo2,
-      }));
+      // Add additional info and sort by newest (descending order)
+      const sortedData = driverData
+        .map((driver, index) => ({
+          ...driver,
+          id: index + 1,
+          vehicleInfo: driver.vehicleInfo2,
+        }))
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Sort by `createdAt`
 
-      setData(dataWithAdditionalInfo);
+      setData(sortedData);
+      setFilteredData(sortedData); // Initialize filtered data
       setError(null);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -50,6 +56,23 @@ function Report() {
     fetchData();
   }, [fetchData]);
 
+  const handleVehicleFilterChange = (e) => {
+    const selectedVehicle = e.target.value;
+    setVehicleFilter(selectedVehicle);
+
+    if (selectedVehicle) {
+      setFilteredData(
+        data.filter(
+          (item) =>
+            item.vehicleInfo?.vehicleType?.toLowerCase() ===
+            selectedVehicle.toLowerCase()
+        )
+      );
+    } else {
+      setFilteredData(data); // Show all drivers if no filter is selected
+    }
+  };
+
   const downloadPDF = () => {
     const doc = new jsPDF();
 
@@ -58,7 +81,7 @@ function Report() {
     doc.text("Approved Drivers Report", 14, 20);
 
     // Prepare table data
-    const tableData = data.map((item) => [
+    const tableData = filteredData.map((item) => [
       item.id,
       item.name || "N/A",
       item.number || "N/A",
@@ -103,6 +126,20 @@ function Report() {
           >
             <div className="report-top-bar">
               <h1>Drivers List Report</h1>
+              <select
+                value={vehicleFilter}
+                onChange={handleVehicleFilterChange}
+                className="vehicle-dropdown"
+                style={{
+                  marginLeft: "20px",
+                  padding: "5px",
+                  fontSize: "16px",
+                }}
+              >
+                <option value="">All Vehicles</option>
+                <option value="Jeep">Jeep</option>
+                <option value="Tricycle">Tricycle</option>
+              </select>
             </div>
             <Table>
               <TableHead>
@@ -115,8 +152,8 @@ function Report() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {data.length > 0 ? (
-                  data.map((item) => (
+                {filteredData.length > 0 ? (
+                  filteredData.map((item) => (
                     <TableRow key={item.id || item._id}>
                       <TableCell>{item.id}</TableCell>
                       <TableCell>{item.name || "N/A"}</TableCell>
