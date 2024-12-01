@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, Suspense } from "react";
 import axios from "axios";
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button } from "@mui/material";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, CircularProgress } from "@mui/material";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import TabBar from "../tab-bar/tabBar";
@@ -10,9 +10,13 @@ const RATINGS_API_URL = "https://serverless-api-hatid-5.onrender.com/.netlify/fu
 function TopPerformingReport() {
   const [ratings, setRatings] = useState([]); // Store original ratings data
   const [groupedRatings, setGroupedRatings] = useState([]); // Store grouped ratings
+  const [loading, setLoading] = useState(true); // Loading state
+  const [error, setError] = useState(null); // Error state
 
   // Fetch ratings data
   const fetchData = useCallback(async () => {
+    setLoading(true); // Set loading to true before fetching data
+    setError(null); // Reset any previous errors
     try {
       const response = await axios.get(RATINGS_API_URL);
       const ratingsData = response.data;
@@ -20,6 +24,10 @@ function TopPerformingReport() {
       // Group ratings by driver and sum total ratings
       const grouped = ratingsData.reduce((acc, rating) => {
         const driver = rating.driver;
+
+        // Ensure rating and driver are not null/undefined before accessing their properties
+        if (!driver || !driver._id) return acc;
+
         const driverId = driver._id;
 
         if (!acc[driverId]) {
@@ -42,6 +50,9 @@ function TopPerformingReport() {
       setGroupedRatings(groupedArray);
     } catch (error) {
       console.error("Error fetching data:", error);
+      setError("Error fetching data. Please try again later.");
+    } finally {
+      setLoading(false); // Set loading to false once data is fetched
     }
   }, []);
 
@@ -81,51 +92,67 @@ function TopPerformingReport() {
   return (
     <div>
       <div className="report-main-content">
-        <TableContainer
-          component={Paper}
-          sx={{
-            maxHeight: 685,
-            marginLeft: 2,
-            maxWidth: "91.5%",
-            marginTop: 3,
-            boxShadow: "0 2px 10px rgba(0, 0, 0, 0.3)",
-          }}
-        >
-          <Table stickyHeader>
-            <TableHead>
-              <TableRow>
-                <TableCell>Driver Name</TableCell>
-                <TableCell>Total Ratings</TableCell>
-                <TableCell>Rating Count</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {groupedRatings.map((rating, index) => (
-                <TableRow key={index}>
-                  <TableCell>{rating.name}</TableCell>
-                  <TableCell>{rating.totalRating} pts</TableCell>
-                  <TableCell>{rating.count}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+       
+        {loading ? (
+          <CircularProgress
+            sx={{ display: 'block', margin: 'auto', marginTop: '20px' }}
+          />
+        ) : error ? (
+          <div>{error}</div>
+        ) : groupedRatings.length === 0 ? (
+          <div>No top performing drivers found</div>
+        ) : (
+          
+          <>
+            <TableContainer
+              component={Paper}
+              sx={{
+                maxHeight: 685,
+                marginLeft: -2,
+                maxWidth: "100%",
+                boxShadow: "0 2px 10px rgba(0, 0, 0, 0.3)",
+              }}
+            >
+               <div className="report-top-bar">
+               <h2>Top Performing Drivers Report</h2>
+               </div>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Driver Name</TableCell>
+                    <TableCell>Total Ratings</TableCell>
+                    <TableCell>Rating Count</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {groupedRatings.map((rating, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{rating.name}</TableCell>
+                      <TableCell>{rating.totalRating} pts</TableCell>
+                      <TableCell>{rating.count}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
 
-        <div>
-        <Button
-          variant="contained"
-          sx={{
-            margin: 2,
-            display: "block",
-            "@media print": {
-              display: "none", // Hide button in print view
-            },
-          }}
-          onClick={downloadPDF} // Update function here
-        >
-          Download PDF
-        </Button>
-        </div>
+            <div>
+            <Button
+            variant="contained"
+            color="primary"
+            onClick={downloadPDF}
+            style={{
+              marginTop: '20px',
+              display: 'block',
+              marginRight: 'auto',
+              width: '200px',
+            }}
+          >
+            Download as PDF
+          </Button>
+            </div>
+          </>
+        )}
       </div>
 
       <Suspense fallback={<div>Loading...</div>}>

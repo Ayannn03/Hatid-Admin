@@ -7,7 +7,7 @@ import{FaStar} from "react-icons/fa"
 import { BsCurrencyDollar } from "react-icons/bs";
 import { MdEmail, MdPhone, MdLocationOn, MdCake, MdEvent, MdAccessTime, MdSubscriptions, MdDirectionsCar, MdPalette, MdCalendarToday} from "react-icons/md";
 import { IoSearch } from "react-icons/io5";
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow,  TablePagination } from "@mui/material";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow,  TablePagination, CircularProgress} from "@mui/material";
 import "./driver.css";
 
 const DRIVER_API_URL =
@@ -23,7 +23,7 @@ const Driver = () => {
   const [nameSearch, setNameSearch] = useState("");
   const [vehicleSearch, setVehicleSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [showViolationModal, setShowViolationModal] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [profileData, setProfileData] = useState(null);
   const [rating, setRating] = useState(null);
   const [driverRatings, setDriverRatings] = useState({});
@@ -37,7 +37,7 @@ const Driver = () => {
  
 
 
-  const sortOptions = ["Name", "Vehicle", "Address"];
+  const sortOptions = ["Name",  "Address"];
   const categoryOptions =["Personal Info", "Vehicle Info" , "Ratings", "Violation", "License Images", "Vehicle Images"]
 
   
@@ -45,6 +45,7 @@ const Driver = () => {
   const navigate = useNavigate();
 
   const fetchData = useCallback(async () => {
+    setLoading(true);
     try {
       const driverResponse = await axios.get(DRIVER_API_URL);
 
@@ -61,6 +62,8 @@ const Driver = () => {
     } catch (error) {
       console.error("Error fetching data:", error);
       setError("Error fetching data");
+    }finally {
+      setLoading(false);
     }
   }, []);
 
@@ -87,19 +90,34 @@ const Driver = () => {
   }, []);
 
 
-
   const fetchAllRatings = useCallback(async (driverId) => {
     try {
+      // Start by fetching ratings for the driver
       const res = await axios.get(`${RATING_API_URL}${driverId}`);
+      
       if (res.data.status === "ok") {
-        const ratingsWithPassengerDetails = await Promise.all(
-          res.data.data.ratings.map(async (rating) => {
-            const passengerName = rating.user
-              ? await fetchPassengerDetails(rating.user)
-              : "N/A";
-            return { ...rating, passengerName };
-          })
+        // If ratings exist, prepare the list of user IDs for batch fetching
+        const ratings = res.data.data.ratings;
+  
+        // Create a list of unique user IDs from the ratings
+        const userIds = Array.from(
+          new Set(ratings.map((rating) => rating.user).filter((id) => id)) // filter out any null IDs
         );
+  
+        // Batch fetch passenger details for all user IDs
+        const passengerDetails = await Promise.all(
+          userIds.map((userId) => fetchPassengerDetails(userId))
+        );
+  
+        // Map user details back to the ratings
+        const ratingsWithPassengerDetails = ratings.map((rating) => ({
+          ...rating,
+          passengerName: passengerDetails.find(
+            (user) => user.userId === rating.user
+          )?.name || "N/A",
+        }));
+  
+        // Update state with the fetched ratings
         setDriverRatings((prevRatings) => ({
           ...prevRatings,
           [driverId]: ratingsWithPassengerDetails,
@@ -119,18 +137,17 @@ const Driver = () => {
     }
   }, []);
   
-
-    const fetchPassengerDetails = async (userId) => {
-      try {
-        const res = await axios.get(`https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/users/${userId}`);
-        return res.data.name || "N/A";
-      } catch (error) {
-        console.error("Error fetching passenger details:", error);
-        return "N/A";
-      }
-    };
-    
-    
+  // Refactor the fetchPassengerDetails to support batch fetching
+  const fetchPassengerDetails = async (userId) => {
+    try {
+      const res = await axios.get(`https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/users/${userId}`);
+      return { userId, name: res.data.name || "N/A" };
+    } catch (error) {
+      console.error("Error fetching passenger details:", error);
+      return { userId, name: "N/A" };
+    }
+  };
+  
     
   
   
@@ -174,8 +191,6 @@ const Driver = () => {
     const sortedData = [...data].sort((a, b) => {
       if (value === "Name") {
         return a.name.localeCompare(b.name);
-      } else if (value === "Vehicle") {
-        return (a.vehicleInfo?.vehicleType || "").localeCompare(b.vehicleInfo?.vehicleType || "");
       } else if (value === "Address") {
         return a.address.localeCompare(b.address);
       }
@@ -234,7 +249,8 @@ const Driver = () => {
               <h2 className="profile-title">Driver Profile</h2>
               <div className="driver-profile-container">
               <div className="driver-profile-image">
-                    <img
+                <div className="profile-image">
+                <img
                       src={profileData.profilePic || "./defaultPic.jpg"}
                       alt="Profile"
                       className="profile-pic"
@@ -246,6 +262,8 @@ const Driver = () => {
                       <p><strong>Last Login:</strong> {profileData.lastLogin || "N/A"}</p>
                       <p>Violation: {violations.length || "0"}</p>
                     </div>
+                  
+                </div>
                   </div>
                   <div className="profile-details">
                   <div className="tab-bar-container">
@@ -261,32 +279,29 @@ const Driver = () => {
                   </div>
                   {categoryValue === "Personal Info" && (
                     <div className="driverInfo">
-                      <p><strong>Driver Information</strong></p>
-                      <p><strong>ID:</strong> {profileData._id}</p>
-                      <p><MdEmail /> <strong>Email:</strong> {profileData.email}</p>
-                      <p><BsCurrencyDollar/> <strong>Subscription Type:</strong> {subscription || "N/A"}</p>
-                      <p><MdPhone /> <strong>Phone:</strong> {profileData.number}</p>
-                      <p><MdLocationOn /> <strong>Address:</strong> {profileData.address}</p>
-                      <p><MdCake /> <strong>Birthday:</strong> {profileData.birthday}</p>
-                      <p><MdCalendarToday/> <strong>Join Date:</strong> {profileData.createdAt ? moment(profileData.createdAt).format("MMMM DD, YYYY") : "N/A"}</p>
+                      <p><strong>ID:</strong> <br />{profileData._id}</p>
+                      <p><MdEmail /> <strong>Email:</strong> <br />{profileData.email}</p>
+                      <p><BsCurrencyDollar/> <strong>Subscription Type:</strong> <br />{subscription || "N/A"}</p>
+                      <p><MdPhone /> <strong>Phone:</strong> <br />{profileData.number}</p>
+                      <p><MdLocationOn /> <strong>Address:</strong><br /> {profileData.address}</p>
+                      <p><MdCake /> <strong>Birthday:</strong> <br />{profileData.birthday}</p>
+                      <p><MdCalendarToday/> <strong>Join Date:</strong> <br />{profileData.createdAt ? moment(profileData.createdAt).format("MMMM DD, YYYY") : "N/A"}</p>
                     </div>
                   )}
 
                   {categoryValue === "Vehicle Info" && (
                     <div className="vehicleInfo">
-                      <p><strong>Vehicle Information</strong></p>
-                      <p><MdDirectionsCar /> <strong>Vehicle Type:</strong> {profileData.vehicleInfo?.vehicleType}</p>
-                      <p><MdCalendarToday /> <strong>Model:</strong> {profileData.vehicleInfo?.model}</p>
-                      <p><MdEvent /> <strong>Year:</strong> {profileData.vehicleInfo?.year}</p>
-                      <p><MdPalette /> <strong>Color:</strong> {profileData.vehicleInfo?.color}</p>
-                      <p><MdSubscriptions /> <strong>Plate Number:</strong> {profileData.vehicleInfo?.plateNumber}</p>
-                      <p><MdAccessTime /> <strong>Capacity:</strong> {profileData.vehicleInfo?.capacity}</p>
+                      <p><MdDirectionsCar /> <strong>Vehicle Type:</strong> <br />{profileData.vehicleInfo?.vehicleType}</p>
+                      <p><MdCalendarToday /> <strong>Model:</strong> <br />{profileData.vehicleInfo?.model}</p>
+                      <p><MdEvent /> <strong>Year:</strong> <br />{profileData.vehicleInfo?.year}</p>
+                      <p><MdPalette /> <strong>Color:</strong> <br />{profileData.vehicleInfo?.color}</p>
+                      <p><MdSubscriptions /> <strong>Plate Number:</strong> <br /> {profileData.vehicleInfo?.plateNumber}</p>
+                      <p><MdAccessTime /> <strong>Capacity:</strong> <br />{profileData.vehicleInfo?.capacity}</p>
                     </div>
                   )} 
                  {categoryValue === "Ratings" && (
                       <div className="ratingsInfo">
-                        <p><strong>Ratings Information</strong></p>
-                        <TableContainer sx={{ maxHeight: 360, width: "600px", borderRadius: '8px', overflow: 'hidden', boxShadow: '0 2px 10px rgba(0, 0, 0, 0.5)', overflowY: "auto" }}>
+                        <TableContainer sx={{ maxHeight: 480, width: "600px", borderRadius: '8px', overflow: 'hidden', boxShadow: '0 2px 10px rgba(0, 0, 0, 0.5)', overflowY: "auto" }}>
                           <Table sx={{ '& .MuiTableCell-root': { textAlign: "center" } }}>
                             <TableHead>
                               <TableRow>
@@ -319,8 +334,7 @@ const Driver = () => {
                     )} 
                   {categoryValue === "Violation" && (
                   <div className="violationsInfo">
-                  <p><strong>Violation Information</strong></p>
-                  <TableContainer sx={{ maxHeight: 600, borderRadius: '8px', overflow: 'hidden', boxShadow: '0 2px 10px rgba(0, 0, 0, 0.5)' , overflowY:"auto"}}>
+                  <TableContainer sx={{maxHeight: 480, width: "600px", borderRadius: '8px', overflow: 'hidden', boxShadow: '0 2px 10px rgba(0, 0, 0, 0.5)' , overflowY:"auto"}}>
                     <Table>
                       <TableHead>
                         <TableRow>
@@ -352,24 +366,23 @@ const Driver = () => {
                   )}
                {categoryValue === "License Images" && (
                   <div className="imageInfo">
-                    <p><strong>License Images</strong></p>
                     <div className="images-container">
                       <div className="image-wrapper">
-                        <p>License Front:</p>
+                       <h3>License Front: </h3> 
                         {profileData.driverInfo?.licenseFront ? (
                           <img src={profileData.driverInfo.licenseFront} alt="License Front" 
                           onClick={() => handleImagePreview(profileData.driverInfo.licenseFront)}/>
                         ) : (
-                          <p>No image available</p>
+                          <h4>No image available</h4>
                         )}
                       </div>
                       <div className="image-wrapper">
-                        <p>License Back:</p>
+                        <h3>License Back:</h3>
                         {profileData.driverInfo?.licenseBack ? (
                           <img src={profileData.driverInfo.licenseBack} alt="License Back" 
                           onClick={() => handleImagePreview(profileData.driverInfo.licenseBack)} />
                         ) : (
-                          <p>No image available</p>
+                          <h4>No image available</h4>
                         )}
                       </div>
                     </div>
@@ -377,52 +390,56 @@ const Driver = () => {
                 )}
 
                 {previewImage && (
-                        <div className="image-preview-modal" onClick={handleClosePreview}>
+                  <div className="preview-modal">
+
+                 
+                        <div className="image-preview-modal" >
+                    <span className="close-preview-btn"   onClick={handleClosePreview}>&times;</span>
                           <div className="image-preview-container">
-                            <img src={previewImage} alt="Preview" className="image-preview" />
+                            <img src={previewImage} alt="Preview" className="image-preview" />  
                           </div>
+                        </div>
                         </div>
                       )}
                 {categoryValue === "Vehicle Images" && (
                   <div className="imageInfo">
-                    <p><strong>Vehicle Images</strong></p>
                     <div className="images-container">
-                      <div className="image-wrapper">
-                        <p>Vehicle Front:</p>
+                      <div className="image-wrapper ">
+                        <h3>Vehicle Front:</h3>
                         {profileData.vehicleInfo1?.vehicleFront ? (
                           <img src={profileData.vehicleInfo1.vehicleFront} 
                           alt="Vehicle Front" 
                           onClick={() => handleImagePreview(profileData.vehicleInfo1.vehicleFront)}/>
                         ) : (
-                          <p>No image available</p>
+                          <h4>No image available</h4>
                         )}
                       </div>
                       <div className="image-wrapper">
-                        <p>Vehicle Back:</p>
+                        <h3>Vehicle Back:</h3>
                         {profileData.vehicleInfo1?.vehicleBack ? (
                           <img src={profileData.vehicleInfo1.vehicleBack} alt="Vehicle Back"   
                           onClick={() => handleImagePreview(profileData.vehicleInfo1.vehicleBack)}
                            />
                         ) : (
-                          <p>No image available</p>
+                          <h4>No image available</h4>
                         )}
                       </div>
                       <div className="image-wrapper">
-                        <p>Vehicle Right:</p>
+                        <h3>Vehicle Right:</h3>
                         {profileData.vehicleInfo1?.vehicleRight ? (
                           <img src={profileData.vehicleInfo1.vehicleRight} alt="Vehicle Right" 
                           onClick={() => handleImagePreview(profileData.vehicleInfo1.vehicleRight)}/>
                         ) : (
-                          <p>No image available</p>
+                          <h4>No image available</h4>
                         )}
                       </div>
                       <div className="image-wrapper">
-                        <p>Vehicle Left:</p>
+                        <h3>Vehicle Left:</h3>
                         {profileData.vehicleInfo1?.vehicleLeft ? (
                           <img src={profileData.vehicleInfo1.vehicleLeft} alt="Vehicle Left" 
                           onClick={() => handleImagePreview(profileData.vehicleInfo1.vehicleLeft)} />
                         ) : (
-                          <p>No image available</p>
+                          <h4>No image available</h4>
                         )}
                       </div>
                     </div>
@@ -434,7 +451,12 @@ const Driver = () => {
             </div>
         </>
       )}
-      
+       {loading ? (
+       <CircularProgress sx={{ display: "block", margin: "auto", marginTop: 4 }} />
+      ) : (
+      <div>
+
+     
       <TableContainer
         sx={{
           maxHeight: 685,
@@ -483,7 +505,7 @@ const Driver = () => {
           <TableBody >
             {paginatedData.map((item) => (
               <TableRow key={item._id} >
-                <TableCell >{item._id}</TableCell>
+                <TableCell >{item.id}</TableCell>
                 <TableCell>{item.name || "N/A"}</TableCell>
                 <TableCell>{item.number || "N/A"}</TableCell>
                 <TableCell>{item.address || "N/A"}</TableCell>
@@ -495,16 +517,23 @@ const Driver = () => {
             ))}
           </TableBody>
         </Table>
+        
+     
       </TableContainer>
-      <TablePagination
-        rowsPerPageOptions={[10, 20, 30]}
-        component="div"
-        count={filteredData.length}
-        page={page}
-        rowsPerPage={rowsPerPage}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleRowsPerPageChange}
-      />
+
+       <TablePagination
+       rowsPerPageOptions={[10, 20, 30]}
+       component="div"
+       count={filteredData.length}
+       page={page}
+       rowsPerPage={rowsPerPage}
+       onPageChange={handleChangePage}
+       onRowsPerPageChange={handleRowsPerPageChange}
+     /> 
+     </div>
+
+         )}
+
       <TabBar />
     </div>
   );

@@ -13,6 +13,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  CircularProgress
 } from '@mui/material';
 import TabBar from '../tab-bar/tabBar';
 import './fare.css';
@@ -24,13 +25,15 @@ function FairSettings() {
   const [fares, setFares] = useState([]);
   const [originalFares, setOriginalFares] = useState([]);
   const [editFares, setEditFares] = useState({});
-  const [modalOpen, setModalOpen] = useState(false); // Controls modal visibility
-  const [actionToConfirm, setActionToConfirm] = useState(null); // Stores the action to confirm
-  const [currentFareId, setCurrentFareId] = useState(null); // Tracks the current fare for updating
+  const [modalOpen, setModalOpen] = useState(false);
+  const [actionToConfirm, setActionToConfirm] = useState(null);
+  const [currentFareId, setCurrentFareId] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   // Fetch fare data when the component mounts
   useEffect(() => {
     const fetchFares = async () => {
+      setLoading(true); // Show loading indicator
       try {
         const res = await axios.get(API_URL);
         if (res.data && Array.isArray(res.data)) {
@@ -39,6 +42,8 @@ function FairSettings() {
         }
       } catch (error) {
         console.error("Error fetching fares:", error);
+      } finally {
+        setLoading(false); // Hide loading indicator
       }
     };
 
@@ -121,12 +126,16 @@ function FairSettings() {
 
   return (
     <div className="fare-main-content">
-
+      {loading ? (
+        <div className="loading-container">
+          <CircularProgress sx={{ display: "block", margin: "auto", marginTop: 4 }} />
+        </div>
+      ) : (
+        <div>
           <div className="fare-top-bar">
-              <h1>Fare Settings</h1>
-            </div>
-      <div>
-        {fares.length > 0 ? (
+            <h1>Fare Settings</h1>
+          </div>
+
           <TableContainer
             sx={{
               width: '99%',
@@ -134,7 +143,7 @@ function FairSettings() {
             }}
           >
             <Table>
-              <TableHead sx={{ '& .MuiTableCell-root': { padding: '25px'} }}>
+              <TableHead sx={{ '& .MuiTableCell-root': { padding: '25px' } }}>
                 <TableRow>
                   <TableCell>Vehicle Type</TableCell>
                   <TableCell>Base Fare</TableCell>
@@ -143,82 +152,74 @@ function FairSettings() {
                   <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
-              <TableBody sx={{ '& .MuiTableCell-root': { padding: '30px'} }}>
-                {fares.map((fare) => (
-                  <TableRow key={fare._id}>
-                    <TableCell>{fare.vehicleType}</TableCell>
-                    <TableCell>
-                      <TextField
-                        type="number"
-                        value={editFares[fare._id]?.baseFare ?? fare.baseFare}
-                        onChange={(e) =>
-                          handleInputChange(fare._id, 'baseFare', e.target.value)
-                        }
-                        variant="outlined"
-                        size="small"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <TextField
-                        type="number"
-                        value={
-                          editFares[fare._id]?.bookingFee ?? fare.bookingFee
-                        }
-                        onChange={(e) =>
-                          handleInputChange(
-                            fare._id,
-                            'bookingFee',
-                            e.target.value
-                          )
-                        }
-                        variant="outlined"
-                        size="small"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <TextField
-                        type="number"
-                        value={
-                          editFares[fare._id]?.farePerKm ?? fare.farePerKm
-                        }
-                        onChange={(e) =>
-                          handleInputChange(
-                            fare._id,
-                            'farePerKm',
-                            e.target.value
-                          )
-                        }
-                        variant="outlined"
-                        size="small"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <button
-                        className='view-button'
-                        onClick={() => openModal('update', fare._id)}
-                      >
-                        Update
-                      </button>
+              <TableBody sx={{ '& .MuiTableCell-root': { padding: '30px' } }}>
+                {fares.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} align="center">
+                      No fare data available
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  fares.map((fare) => (
+                    <TableRow key={fare._id}>
+                      <TableCell>{fare.vehicleType}</TableCell>
+                      <TableCell>
+                        <TextField
+                          type="number"
+                          value={editFares[fare._id]?.baseFare ?? fare.baseFare}
+                          onChange={(e) =>
+                            handleInputChange(fare._id, 'baseFare', e.target.value)
+                          }
+                          variant="outlined"
+                          size="small"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <TextField
+                          type="number"
+                          value={editFares[fare._id]?.bookingFee ?? fare.bookingFee}
+                          onChange={(e) =>
+                            handleInputChange(fare._id, 'bookingFee', e.target.value)
+                          }
+                          variant="outlined"
+                          size="small"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <TextField
+                          type="number"
+                          value={editFares[fare._id]?.farePerKm ?? fare.farePerKm}
+                          onChange={(e) =>
+                            handleInputChange(fare._id, 'farePerKm', e.target.value)
+                          }
+                          variant="outlined"
+                          size="small"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <button
+                          className="view-button"
+                          onClick={() => openModal('update', fare._id)}
+                        >
+                          Update
+                        </button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
-            <div className='reset'>
-            <button className='view-button' onClick={() => openModal('reset')}>
-          Reset Changes
-        </button>
+
+            <div className="reset">
+              <button className="view-button" onClick={() => openModal('reset')}>
+                Reset Changes
+              </button>
             </div>
           </TableContainer>
-        ) : (
-          <p>No fare data available</p>
-        )}
-      </div>
+        </div>
+      )}
 
-     
       <div>
-        
-
         <TabBar />
       </div>
 

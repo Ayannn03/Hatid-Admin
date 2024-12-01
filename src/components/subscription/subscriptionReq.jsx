@@ -11,6 +11,7 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
+  CircularProgress,
 } from '@mui/material';
 import './subscription.css';
 import TabBar from '../tab-bar/tabBar';
@@ -25,8 +26,9 @@ const SubscriptionReq = () => {
   const [selectedSubscription, setSelectedSubscription] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [subscriptionTypeFilter, setSubscriptionTypeFilter] = useState(''); 
+  const [subscriptionTypeFilter, setSubscriptionTypeFilter] = useState('');
   const [previewImage, setPreviewImage] = useState(null); // State for image preview
+  const [loading, setLoading] = useState(true); // Add loading state
 
   // Fetch data from the API
   useEffect(() => {
@@ -35,6 +37,7 @@ const SubscriptionReq = () => {
 
   const fetchData = async () => {
     try {
+      setLoading(true); // Set loading to true before fetching data
       const response = await axios.get(API_URL);
       const dataWithId = response.data.map((item, index) => ({
         ...item,
@@ -45,9 +48,10 @@ const SubscriptionReq = () => {
     } catch (error) {
       console.error('Error fetching data:', error);
       setError('Error fetching data');
+    } finally {
+      setLoading(false); // Set loading to false after data is fetched
     }
   };
-
 
   // Handle accepting a payment for a subscription
   const handleAcceptPayment = async (subscriptionId) => {
@@ -69,6 +73,28 @@ const SubscriptionReq = () => {
       }
     } catch (error) {
       console.error('Error handling payment acceptance:', error);
+    }
+  };
+
+  // Handle rejecting (deleting) a subscription
+  const handleRejectSubscription = async (subscriptionId) => {
+    try {
+      if (!subscriptionId) {
+        throw new Error('SubscriptionId is required');
+      }
+
+      const response = await axios.delete(
+        `https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/subs/subscription-reject/${subscriptionId}`
+      );
+
+      if (response.status === 200) {
+        console.log('Subscription rejected:', response.data);
+        fetchData(); // Refresh the data after rejecting (deleting) the subscription
+      } else {
+        console.error('Failed to reject subscription:', response.data.message);
+      }
+    } catch (error) {
+      console.error('Error rejecting subscription:', error);
     }
   };
 
@@ -128,7 +154,6 @@ const SubscriptionReq = () => {
     setNameSearch(e.target.value);
   };
 
-
   return (
     <div className="subs-main-content">
       {/* Modal for viewing receipts */}
@@ -178,89 +203,100 @@ const SubscriptionReq = () => {
         </Dialog>
       )}
 
-      {/* Subscription Table */}
+{loading ? (
+        <div className="loading-container">
+         <CircularProgress sx={{ display: "block", margin: "auto", marginTop: 4 }} />
+          <p>Loading subscriptions...</p>
+        </div>
+      ) : (
       <div className="subscriptions-table">
-      <TableContainer
-              sx={{
-                maxHeight: 680,
-                marginLeft: 28,
-                maxWidth: '85.5%',
-                marginTop: '30px',
-                boxShadow: '0 2px 10px rgba(0, 0, 0, 0.5)',
-              }}
-            >
-              <div className="subscription-top-bar">
-                <h1 className="subcription-list">Subscriptions Applications</h1>
-                <div className="sort-container-subs">
-                  <select onChange={handleSubscriptionTypeChange} value={subscriptionTypeFilter}>
-                    <option value="">Filter By Subscription Type</option>
-                    <option value="Monthly">Monthly</option>
-                    <option value="Quarterly">Quarterly</option>
-                    <option value="Annually">Annually</option>
-                  </select>
-                </div>
-                <div className="search-bar-container">
-                  <input
-                    className="input-design"
-                    type="text"
-                    placeholder="Search"
-                    value={nameSearch}
-                    onChange={handleSearch}
-                  />
-                </div>
-              </div>
-
-              <Table sx={{ '& .MuiTableCell-root': { padding: '10px' } }}>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>ID</TableCell>
-                    <TableCell>Driver</TableCell>
-                    <TableCell>Subscription Type</TableCell>
-                    <TableCell>Vehicle Type</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell>Receipt</TableCell>
-                    <TableCell>Actions</TableCell> {/* Actions column */}
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {filteredData.length > 0 ? (
-                    filteredData.map((item) => (
-                      <TableRow key={item.id || item._id}>
-                        <TableCell>{item.id || 'N/A'}</TableCell>
-                        <TableCell>{item.driver?.name || 'N/A'}</TableCell>
-                        <TableCell>{item.subscriptionType || 'N/A'}</TableCell>
-                        <TableCell>{item.vehicleType || 'N/A'}</TableCell>
-                        <TableCell>{item.status || 'N/A'}</TableCell>
-                        <TableCell>
-                          <button
-                            className="view-button"
-                            onClick={() => handleViewReceipt(item)}
-                          >
-                            View Receipt
-                          </button>
-                        </TableCell>
-                        <TableCell>
-                          {/* Accept button in the actions column */}
-                          <button
-                            className="view-button"
-                            onClick={() => handleAcceptPayment(item._id)} // Handle accept payment action
-                          >
-                            Accept
-                          </button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={7} align="center">
-                        No pending Tricycle or Jeep Subscriptions available.
+        <TableContainer
+          sx={{
+            maxHeight: 680,
+            marginLeft: 28,
+            maxWidth: '85.5%',
+            marginTop: '30px',
+            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.5)',
+          }}
+        >
+          <div className="subscription-top-bar">
+            <h1 className="subcription-list">Subscriptions Applications</h1>
+            <div className="sort-container-subs">
+              <select onChange={handleSubscriptionTypeChange} value={subscriptionTypeFilter}>
+                <option value="">Filter By Subscription Type</option>
+                <option value="Monthly">Monthly</option>
+                <option value="Quarterly">Quarterly</option>
+                <option value="Annually">Annually</option>
+              </select>
+            </div>
+            <div className="search-bar-container">
+              <input
+                className="input-design"
+                type="text"
+                placeholder="Search"
+                value={nameSearch}
+                onChange={handleSearch}
+              />
+            </div>
+          </div>
+          
+            <Table sx={{ '& .MuiTableCell-root': { padding: '10px' } }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell>ID</TableCell>
+                  <TableCell>Driver</TableCell>
+                  <TableCell>Subscription Type</TableCell>
+                  <TableCell>Vehicle Type</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Receipt</TableCell>
+                  <TableCell>Actions</TableCell> {/* Actions column */}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filteredData.length > 0 ? (
+                  filteredData.map((item) => (
+                    <TableRow key={item.id || item._id}>
+                      <TableCell>{item.id || 'N/A'}</TableCell>
+                      <TableCell>{item.driver?.name || 'N/A'}</TableCell>
+                      <TableCell>{item.subscriptionType || 'N/A'}</TableCell>
+                      <TableCell>{item.vehicleType || 'N/A'}</TableCell>
+                      <TableCell>{item.status || 'N/A'}</TableCell>
+                      <TableCell>
+                        <button
+                          className="view-button"
+                          onClick={() => handleViewReceipt(item)}
+                        >
+                          View Receipt
+                        </button>
+                      </TableCell>
+                      <TableCell>
+                        {/* Accept button in the actions column */}
+                        <button
+                          className="view-button"
+                          onClick={() => handleAcceptPayment(item._id)} // Handle accept payment action
+                        >
+                          Accept
+                        </button>
+                        <button
+                          className="reject-button"
+                          onClick={() => handleRejectSubscription(item._id)} // Handle reject (delete) subscription action
+                        >
+                          Reject
+                        </button>
                       </TableCell>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={7} align="center">
+                      No pending Tricycle or Jeep Subscriptions available.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+         
+        </TableContainer>
 
         <TablePagination
           rowsPerPageOptions={[10, 20, 30]}
@@ -273,7 +309,7 @@ const SubscriptionReq = () => {
         />
         {error && <div className="error-message">{error}</div>}
       </div>
-
+ )}
       <TabBar />
     </div>
   );

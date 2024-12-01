@@ -13,6 +13,7 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
+  CircularProgress,
 } from '@mui/material';
 import './subscription.css';
 
@@ -26,8 +27,9 @@ const ActiveTricycleSubscriptions = () => {
   const [selectedSubscription, setSelectedSubscription] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [subscriptionTypeFilter, setSubscriptionTypeFilter] = useState(''); // Filter by subscription type
-  const [previewImage, setPreviewImage] = useState(null); // State for image preview
+  const [subscriptionTypeFilter, setSubscriptionTypeFilter] = useState('');
+  const [previewImage, setPreviewImage] = useState(null);
+  const [loading, setLoading] = useState(true); // Add loading state
 
   useEffect(() => {
     fetchData();
@@ -35,6 +37,7 @@ const ActiveTricycleSubscriptions = () => {
 
   const fetchData = async () => {
     try {
+      setLoading(true); // Set loading to true before fetching data
       const response = await axios.get(API_URL);
       const dataWithId = response.data.map((item, index) => ({
         ...item,
@@ -45,6 +48,8 @@ const ActiveTricycleSubscriptions = () => {
     } catch (error) {
       console.error('Error fetching data:', error);
       setError('Error fetching data');
+    } finally {
+      setLoading(false); // Set loading to false after data is fetched (or error occurs)
     }
   };
 
@@ -68,12 +73,10 @@ const ActiveTricycleSubscriptions = () => {
     setPreviewImage(image); // Set the image to be previewed
   };
 
-
   const handleSubscriptionTypeChange = (e) => {
     setSubscriptionTypeFilter(e.target.value);
   };
 
-  // Filter the data by vehicle type (tricycle) and apply subscription type filter
   const filteredData = useMemo(() => {
     return data.filter((item) => {
       const driverName = item.driver?.name?.toLowerCase() || '';
@@ -82,9 +85,9 @@ const ActiveTricycleSubscriptions = () => {
 
       return (
         driverName.includes(nameSearch.toLowerCase()) &&
-        vehicleType === 'tricycle' && // Only filter for tricycle subscriptions
+        vehicleType === 'tricycle' &&
         (subscriptionTypeFilter === '' || item.subscriptionType === subscriptionTypeFilter) &&
-        !isExpired // Exclude expired subscriptions
+        !isExpired
       );
     });
   }, [data, nameSearch, subscriptionTypeFilter]);
@@ -119,7 +122,7 @@ const ActiveTricycleSubscriptions = () => {
                     src={selectedSubscription.receipt}
                     alt="Receipt"
                     style={{ width: '100%', maxHeight: '300px', objectFit: 'contain', cursor: 'pointer' }}
-                    onClick={() => handlePreviewImage(selectedSubscription.receipt)} // Click to preview image
+                    onClick={() => handlePreviewImage(selectedSubscription.receipt)}
                   />
                 </div>
               ) : (
@@ -134,7 +137,6 @@ const ActiveTricycleSubscriptions = () => {
 
       {previewImage && (
         <Dialog open={!!previewImage} onClose={() => setPreviewImage(null)} maxWidth="sm" fullWidth>
-          <DialogTitle>Image Preview</DialogTitle>
           <DialogContent>
             <img
               src={previewImage}
@@ -150,8 +152,12 @@ const ActiveTricycleSubscriptions = () => {
           </DialogContent>
         </Dialog>
       )}
-
-      {/* Subscription Table */}
+           {loading ? (
+            <div className="loading-container">
+             <CircularProgress sx={{ display: "block", margin: "auto", marginTop: 4 }} />
+              <p>Loading subscriptions...</p>
+            </div>
+          ) : (
       <div className="subscriptions-table">
         <TableContainer
           sx={{
@@ -183,49 +189,50 @@ const ActiveTricycleSubscriptions = () => {
             </div>
           </div>
 
-          <Table sx={{ '& .MuiTableCell-root': { padding: '10px' } }}>
-            <TableHead>
-              <TableRow>
-                <TableCell>ID</TableCell>
-                <TableCell>Driver</TableCell>
-                <TableCell>Subscription Type</TableCell>
-                <TableCell>Vehicle Type</TableCell>
-                <TableCell>Start</TableCell>
-                <TableCell>End</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Receipt</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {paginatedData.length > 0 ? (
-                paginatedData.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell>{item.id}</TableCell>
-                    <TableCell>{item.driver?.name}</TableCell>
-                    <TableCell>{item.subscriptionType}</TableCell>
-                    <TableCell>{item.vehicleType}</TableCell>
-                    <TableCell>{moment(item.startDate).format('MMMM DD, YYYY')}</TableCell>
-                    <TableCell>{moment(item.endDate).format('MMMM DD, YYYY')}</TableCell>
-                    <TableCell>{item.status}</TableCell>
-                    <TableCell>
-                      <button
-                        className="view-button"
-                        onClick={() => handleViewReceipt(item)}
-                      >
-                        View Receipt
-                      </button>
+            <Table sx={{ '& .MuiTableCell-root': { padding: '10px' } }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell>ID</TableCell>
+                  <TableCell>Driver</TableCell>
+                  <TableCell>Subscription Type</TableCell>
+                  <TableCell>Vehicle Type</TableCell>
+                  <TableCell>Start</TableCell>
+                  <TableCell>End</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Receipt</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {paginatedData.length > 0 ? (
+                  paginatedData.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell>{item.id}</TableCell>
+                      <TableCell>{item.driver?.name}</TableCell>
+                      <TableCell>{item.subscriptionType}</TableCell>
+                      <TableCell>{item.vehicleType}</TableCell>
+                      <TableCell>{moment(item.startDate).format('MMMM DD, YYYY')}</TableCell>
+                      <TableCell>{moment(item.endDate).format('MMMM DD, YYYY')}</TableCell>
+                      <TableCell>{item.status}</TableCell>
+                      <TableCell>
+                        <button
+                          className="view-button"
+                          onClick={() => handleViewReceipt(item)}
+                        >
+                          View Receipt
+                        </button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={8} align="center">
+                      No Active Tricycle Subscriptions Found.
                     </TableCell>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={8} align="center">
-                    No Active Tricycle Subscriptions Found.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                )}
+              </TableBody>
+            </Table>
+        
         </TableContainer>
 
         {/* Pagination */}
@@ -241,6 +248,7 @@ const ActiveTricycleSubscriptions = () => {
 
         {error && <div className="error-message">{error}</div>}
       </div>
+        )}
       <TabBar />
     </div>
   );

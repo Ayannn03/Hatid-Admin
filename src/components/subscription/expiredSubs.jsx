@@ -13,6 +13,7 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
+  CircularProgress
 } from '@mui/material';
 import './subscription.css';
 
@@ -27,7 +28,8 @@ const ExpiredJeepAndTricycleSubscriptions = () => {
   const [selectedSubscription, setSelectedSubscription] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [previewImage, setPreviewImage] = useState(null); // For previewing the clicked image
+  const [previewImage, setPreviewImage] = useState(null);
+  const [loading, setLoading] = useState(true);
   
 
   useEffect(() => {
@@ -35,6 +37,7 @@ const ExpiredJeepAndTricycleSubscriptions = () => {
   }, []);
 
   const fetchData = async () => {
+    setLoading(true); // Correct way to set loading to true
     try {
       const response = await axios.get(API_URL);
       const dataWithId = response.data.map((item, index) => ({
@@ -46,6 +49,8 @@ const ExpiredJeepAndTricycleSubscriptions = () => {
     } catch (error) {
       console.error('Error fetching data:', error);
       setError('Error fetching data');
+    } finally {
+      setLoading(false); // Set loading to false when the request is complete
     }
   };
 
@@ -137,7 +142,6 @@ const ExpiredJeepAndTricycleSubscriptions = () => {
 
       {previewImage && (
         <Dialog open={!!previewImage} onClose={() => setPreviewImage(null)} maxWidth="sm" fullWidth>
-          <DialogTitle>Image Preview</DialogTitle>
           <DialogContent>
             <img
               src={previewImage}
@@ -154,7 +158,12 @@ const ExpiredJeepAndTricycleSubscriptions = () => {
         </Dialog>
       )}
 
-      {/* Subscription Table */}
+{loading ? (
+        <div className="loading-container">
+         <CircularProgress sx={{ display: "block", margin: "auto", marginTop: 4 }} />
+          <p>Loading subscriptions...</p>
+        </div>
+      ) : (
       <div className="subscriptions-table">
         <TableContainer
           sx={{
@@ -247,6 +256,7 @@ const ExpiredJeepAndTricycleSubscriptions = () => {
 
         {error && <div className="error-message">{error}</div>}
       </div>
+      )}
       <TabBar />
     </div>
   );

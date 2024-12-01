@@ -11,7 +11,7 @@ body {
 .tabBar {
   display: flex;
   flex-direction: column;
-  width: 230px;
+  width: 250px;
   background: #64b5f6;
   height: 100vh;
   padding-top: 10px;

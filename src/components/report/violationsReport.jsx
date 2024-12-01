@@ -10,6 +10,7 @@ import {
   TableRow,
   Paper,
   Button,
+  CircularProgress
 } from "@mui/material";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
@@ -20,9 +21,11 @@ const VIOLATION_API_URL =
 function ViolationsReport() {
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true)
 
   // Fetch violations data
   const fetchData = useCallback(async () => {
+    setLoading(true);
     try {
       const response = await axios.get(VIOLATION_API_URL);
       const violationData = response.data;
@@ -42,7 +45,10 @@ function ViolationsReport() {
     } catch (error) {
       console.error("Error fetching data:", error);
       setError("Error fetching data. Please try again later.");
+    } finally{
+      setLoading(false);
     }
+
   }, []);
 
   useEffect(() => {
@@ -101,18 +107,26 @@ function ViolationsReport() {
 
   return (
     <div>
-      <div className="report-main-content">
+      {loading ? (
+        <div className="loading-container">
+          <CircularProgress sx={{ display: "block", margin: "auto", marginTop: 4 }} />
+          <p>Loading bookings...</p>
+        </div>
+      ) : (
+      <div className="report-main-content">     
         <TableContainer
           component={Paper}
           sx={{
             maxHeight: 685,
-            marginLeft: 2,
-            maxWidth: "91.5%",
-            marginTop: 3,
+            marginLeft: -2,
+            maxWidth: "100%",  
             boxShadow: "0 2px 10px rgba(0, 0, 0, 0.3)",
           }}
         >
-          <Table stickyHeader>
+           <div className="report-top-bar">
+        <h2>Violation Report</h2>
+        </div>
+          <Table>
             <TableHead>
               <TableRow>
                 <TableCell>ID</TableCell>
@@ -150,22 +164,23 @@ function ViolationsReport() {
           </div>
         )}
 
-<div>
-        <Button
-          variant="contained"
-          sx={{
-            margin: 2,
-            display: "block",
-            "@media print": {
-              display: "none", // Hide button in print view
-            },
-          }}
-          onClick={downloadPDF} // Update function here
-        >
-          Download PDF
-        </Button>
+      <div>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={downloadPDF}
+            style={{
+              marginTop: '20px',
+              display: 'block',
+              marginRight: 'auto',
+              width: '200px',
+            }}
+          >
+            Download as PDF
+          </Button>
         </div>
       </div>
+      )}
 
       <TabBar />
     </div>

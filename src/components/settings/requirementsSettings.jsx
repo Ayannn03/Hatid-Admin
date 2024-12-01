@@ -12,6 +12,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  CircularProgress
 } from '@mui/material';
 import TabBar from '../tab-bar/tabBar';
 import './requirements.css';
@@ -28,9 +29,11 @@ function RequirementsSettings() {
   const [modalOpen, setModalOpen] = useState(false);
   const [currentAction, setCurrentAction] = useState(null);
   const [currentRequirementId, setCurrentRequirementId] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchRequirements = async () => {
+      setLoading(true); // Show loading indicator
       try {
         const res = await axios.get(API_URL);
         if (res.data && Array.isArray(res.data.data)) {
@@ -38,6 +41,8 @@ function RequirementsSettings() {
         }
       } catch (error) {
         console.error("Error fetching requirements:", error);
+      } finally {
+        setLoading(false); // Hide loading indicator
       }
     };
     fetchRequirements();
@@ -109,96 +114,105 @@ function RequirementsSettings() {
 
   return (
     <div className="require-main-content">
+      {/* Show loading spinner */}
+      {loading ? (
+        <div className="loading-container">
+          <CircularProgress sx={{ display: "block", margin: "auto", marginTop: 4 }} />
+        </div>
+      ) : (
+        <>
+          <div className="req-top-bar">
+            <h1>Requirements Settings</h1>
+          </div>
 
-      
-      <div className="req-top-bar">
-              <h1>Requirements Settings</h1>
+          <TableContainer
+            sx={{
+              width: '100%',
+              boxShadow: '0 2px 10px rgba(0, 0, 0, 0.3)',
+            }}
+          >
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Document Name</TableCell>
+                  <TableCell>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {requirements.map((requirement) => (
+                  <TableRow key={requirement._id}>
+                    <TableCell>
+                      {editingRequirement === requirement._id ? (
+                        <TextField
+                          value={editedDocumentName}
+                          onChange={(e) => setEditedDocumentName(e.target.value)}
+                          variant="outlined"
+                          size="small"
+                        />
+                      ) : (
+                        requirement.documentName
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editingRequirement === requirement._id ? (
+                        <>
+                          <button
+                            className="view-button"
+                            onClick={() => openModal('update', requirement._id)}
+                          >
+                            Save
+                          </button>
+                          <button
+                            className="view-button"
+                            onClick={() => setEditingRequirement(null)}
+                          >
+                            Cancel
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            className="view-button"
+                            onClick={() => {
+                              setEditingRequirement(requirement._id);
+                              setEditedDocumentName(requirement.documentName);
+                            }}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="delete-button"
+                            onClick={() => openModal('delete', requirement._id)}
+                          >
+                            Delete
+                          </button>
+                        </>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+
+            {/* Add requirement */}
+            <div className="add-requirement">
+              <TextField
+                label="Add New Requirement"
+                value={newRequirement}
+                onChange={(e) => setNewRequirement(e.target.value)}
+                variant="outlined"
+                size="small"
+              />
+              <button
+                className="view-button"
+                onClick={() => openModal('add')}
+              >
+                Add
+              </button>
             </div>
-      <TableContainer
-        sx={{
-          width: '100%',
-          boxShadow: '0 2px 10px rgba(0, 0, 0, 0.3)',
-        }}
-      >
-      
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Document Name</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {requirements.map((requirement) => (
-              <TableRow key={requirement._id}>
-                <TableCell>
-                  {editingRequirement === requirement._id ? (
-                    <TextField
-                      value={editedDocumentName}
-                      onChange={(e) => setEditedDocumentName(e.target.value)}
-                      variant="outlined"
-                      size="small"
-                    />
-                  ) : (
-                    requirement.documentName
-                  )}
-                </TableCell>
-                <TableCell>
-                  {editingRequirement === requirement._id ? (
-                    <>
-                      <button
-                        className="view-button"
-                        onClick={() => openModal('update', requirement._id)}
-                      >
-                        Save
-                      </button>
-                      <button
-                        className="view-button"
-                        onClick={() => setEditingRequirement(null)}
-                      >
-                        Cancel
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        className="view-button"
-                        onClick={() => {
-                          setEditingRequirement(requirement._id);
-                          setEditedDocumentName(requirement.documentName);
-                        }}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="delete-button"
-                        onClick={() => openModal('delete', requirement._id)}
-                      >
-                        Delete
-                      </button>
-                    </>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        <div className="add-requirement">
-        <TextField
-          label="Add New Requirement"
-          value={newRequirement}
-          onChange={(e) => setNewRequirement(e.target.value)}
-          variant="outlined"
-          size="small"
-        />
-        <button
-          className="view-button"
-          onClick={() => openModal('add')}
-        >
-          Add
-        </button>
-      </div>
-      </TableContainer>
+          </TableContainer>
+        </>
+      )}
 
       <TabBar />
 

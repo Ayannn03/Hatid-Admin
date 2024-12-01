@@ -8,7 +8,7 @@
   background-color: #fff;  
 }
 .violation-main-content{
-  margin-left: 10px;
+  margin-left: 30px;
 }
 
 
@@ -19,6 +19,7 @@ thead {
   border-top: 2px solid #e0e0e0;  
   border-radius: 8px;
 }
+
 
 table tr {
   white-space: nowrap;
@@ -35,9 +36,14 @@ tbody tr {
   background-color: white;
 }
 
-tbody tr:hover {
-  background-color: #f0f0f0;
+.MuiTableRow-root:nth-of-type(odd) {
+  background-color: #f9f9f9; /* Alternating row colors */
 }
+
+.MuiTableRow-root:nth-of-type(even) {
+  background-color: #ffffff;
+}
+
 
 
 /* Modal buttons */

@@ -10,11 +10,8 @@ import {
   TableRow,
   Button,
   CircularProgress,
-  FormControl,
-  Select,
-  MenuItem,
-  InputLabel,
   TablePagination,
+  Typography,
 } from "@mui/material";
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable'; // Importing the autotable plugin for jsPDF
@@ -102,6 +99,7 @@ const BookingReport = () => {
 
       // Flatten the grouped data for pagination
       const flattenedData = flattenGroupedData(groupedByName);
+
       setData(flattenedData);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -197,53 +195,51 @@ const BookingReport = () => {
 
   return (
     <div className="booking">
-      <div className="report-main-content">
-        <div className="commuters-top-bar">
-          <h1>Booking Report</h1>
-          <Button
-            variant="contained"
-            onClick={handleDownloadPDF}
-            className="download-button"
-            sx={{ marginBottom: 2 }}
-          >
-            Download as PDF
-          </Button>
-        </div>
-
-        {/* Filter Dropdown */}
-        <FormControl fullWidth sx={{ marginBottom: 2 }}>
-          <InputLabel>Filter By</InputLabel>
-          <Select value={filter} onChange={(e) => setFilter(e.target.value)} label="Filter By">
-            <MenuItem value="week">Week</MenuItem>
-            <MenuItem value="month">Month</MenuItem>
-            <MenuItem value="year">Year</MenuItem>
-          </Select>
-        </FormControl>
-
-        {/* Loading Indicator */}
-        {loading ? (
+      {loading ? (
+        <div className="loading-container">
           <CircularProgress sx={{ display: "block", margin: "auto", marginTop: 4 }} />
-        ) : (
-          data.length > 0 && (
-            <TableContainer
-              sx={{
-                maxHeight: 580,
-                maxWidth: "91.5%",
-                boxShadow: "0 2px 10px rgba(0, 0, 0, 0.5)",
-                marginTop: 3,
-              }}
-            >
-              <Table sx={{ "& .MuiTableCell-root": { padding: "10px" } }}>
-                <TableHead>
+          <p>Loading bookings...</p>
+        </div>
+      ) : (
+        <div className="report-main-content">
+          <TableContainer
+            sx={{
+              maxHeight: 580,
+              width: "100%",
+              boxShadow: "0 2px 10px rgba(0, 0, 0, 0.5)",
+              marginTop: 3,
+            }}
+          >
+            <div className="report-top-bar">
+              <h1>Booking Report</h1>
+              <div className="sort-container-subs">
+                <select onChange={(e) => setFilter(e.target.value)}>
+                  <option value="week">Week</option>
+                  <option value="month">Month</option>
+                  <option value="year">Year</option>
+                </select>
+              </div>
+            </div>
+            <Table sx={{ "& .MuiTableCell-root": { padding: "15px" } }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell><strong>Passenger Name</strong></TableCell>
+                  <TableCell><strong>Pickup Address</strong></TableCell>
+                  <TableCell><strong>Destination Address</strong></TableCell>
+                  <TableCell><strong>Booking Count</strong></TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {data.length === 0 ? (
                   <TableRow>
-                    <TableCell><strong>Passenger Name</strong></TableCell>
-                    <TableCell><strong>Pickup Address</strong></TableCell>
-                    <TableCell><strong>Destination Address</strong></TableCell>
-                    <TableCell><strong>Booking Count</strong></TableCell>
+                    <TableCell colSpan={4} align="center">
+                      <Typography variant="h6" color="textSecondary">
+                        No bookings found for the selected filter.
+                      </Typography>
+                    </TableCell>
                   </TableRow>
-                </TableHead>
-                <TableBody>
-                  {data
+                ) : (
+                  data
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .map((row, index) => (
                       <TableRow key={index}>
@@ -252,23 +248,35 @@ const BookingReport = () => {
                         <TableCell>{row.destinationAddress}</TableCell>
                         <TableCell>{row.bookingCount}</TableCell>
                       </TableRow>
-                    ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )
-        )}
+                    ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <Button
+          variant="contained"
+          color="primary"
+          onClick={handleDownloadPDF}
+          style={{
+            marginTop: '20px',
+            display: 'block',
+            width: '200px',
+          }}
+        >
+          Download as PDF
+        </Button>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 15]}
+            component="div"
+            count={data.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        </div>
+      )}
 
-        {/* Pagination */}
-        <TablePagination
-          component="div"
-          count={data.length}
-          page={page}
-          onPageChange={handleChangePage}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-      </div>
       <TabBar/>
     </div>
   );

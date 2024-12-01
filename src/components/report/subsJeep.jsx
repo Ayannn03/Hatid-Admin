@@ -2,24 +2,38 @@ import React, { useEffect, useState, useMemo } from 'react';
 import TabBar from '../tab-bar/tabBar';
 import axios from 'axios';
 import moment from 'moment';
-import { TableContainer, Table, TableBody, TableCell, TableHead, TableRow, TablePagination, Button } from "@mui/material";
-import { jsPDF } from "jspdf";
+import {
+  TableContainer,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  TablePagination,
+  CircularProgress,
+  Button,
+} from '@mui/material';
+import jsPDF from 'jspdf'; // Import jsPDF
+import 'jspdf-autotable'; // Import AutoTable plugin
 import './driverReport.css';
 
-const API_URL = 'https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/subs/subscription/';
+const API_URL = 'https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/subs/subscription';
 
-const Jeep = () => {
+const ActiveJeepSubscriptions = () => {
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10); 
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [subscriptionTypeFilter, setSubscriptionTypeFilter] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchData();
-  }, []); // Empty array ensures fetchData is called only once after mount
+  }, []);
 
   const fetchData = async () => {
     try {
+      setLoading(true);
       const response = await axios.get(API_URL);
       const dataWithId = response.data.map((item, index) => ({
         ...item,
@@ -29,17 +43,27 @@ const Jeep = () => {
       setError(null);
     } catch (error) {
       console.error('Error fetching data:', error);
-      setError(error.message || 'Error fetching data');
+      setError('Error fetching data');
+    } finally {
+      setLoading(false);
     }
   };
 
+  const handleSubscriptionTypeChange = (e) => {
+    setSubscriptionTypeFilter(e.target.value);
+  };
+
   const filteredData = useMemo(() => {
-    return data.filter((item) =>
-      item.vehicleType.toLowerCase() === 'jeep' &&
-      item.status.toLowerCase() === 'active' && // Ensure status is 'active'
-      moment().isBefore(item.endDate) // Ensure subscription is not expired
-    );
-  }, [data]);
+    return data.filter((item) => {
+      const vehicleType = item.vehicleType?.toLowerCase() || '';
+      const isExpired = moment().isAfter(moment(item.endDate));
+      return (
+        vehicleType === 'jeep' &&
+        (subscriptionTypeFilter === '' || item.subscriptionType === subscriptionTypeFilter) &&
+        !isExpired
+      );
+    });
+  }, [data, subscriptionTypeFilter]);
 
   const paginatedData = useMemo(() => {
     return filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
@@ -54,59 +78,70 @@ const Jeep = () => {
     setPage(0);
   };
 
-  // Function to download the table as PDF
   const handleDownloadPDF = () => {
     const doc = new jsPDF();
-    const tableColumn = ["ID", "Driver", "Subscription Type", "Vehicle Type", "Start", "End", "Status"];
-    const tableRows = [];
 
-    paginatedData.forEach((item) => {
-      const isExpired = moment().isAfter(item.endDate);
-      const row = [
-        item._id,
-        item.driver,
-        item.subscriptionType,
-        item.vehicleType,
-        moment(item.startDate).format('MMMM DD, YYYY'),
-        moment(item.endDate).format('MMMM DD, YYYY'),
-        isExpired ? 'Expired' : item.status
-      ];
-      tableRows.push(row);
-    });
+    // Add Title
+    doc.setFontSize(18);
+    doc.text('Active Jeep Subscriptions Report', 14, 20);
+
+    // Add Table
+    const tableData = filteredData.map((item) => [
+      item.id,
+      item.driver?.name || 'N/A',
+      item.subscriptionType,
+      item.vehicleType,
+      moment(item.startDate).format('MMMM DD, YYYY'),
+      moment(item.endDate).format('MMMM DD, YYYY'),
+      item.status,
+    ]);
 
     doc.autoTable({
-      head: [tableColumn],
-      body: tableRows,
-      startY: 20,
-      theme: 'striped',
+      head: [
+        ['ID', 'Driver', 'Subscription Type', 'Vehicle Type', 'Start Date', 'End Date', 'Status'],
+      ],
+      body: tableData,
+      startY: 30,
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [22, 160, 133] }, // Header background color
+      margin: { left: 14, right: 14 },
     });
 
-    doc.save("Subscription_List.pdf");
+    // Save PDF
+    doc.save('Active_Jeep_Subscriptions_Report.pdf');
   };
 
   return (
     <div className="subs-main-content">
-      <div className="subscriptions-table">
-        <TableContainer
-          sx={{
-            maxHeight: 680,
-            marginLeft: 28,
-            maxWidth: "85.5%",
-            marginTop: "30px",
-            boxShadow: "0 2px 10px rgba(0, 0, 0, 0.5)",
-          }}
-        >
-          <div className="subscription-top-bar">
-            <h1 className="subcription-list">Subscription List</h1>
-            <Button onClick={handleDownloadPDF} variant="contained" color="primary" style={{ marginBottom: "20px" }}>
-              Download as PDF
-            </Button>
-          </div>
+      {loading ? (
+        <div className="loading-container">
+          <CircularProgress sx={{ display: 'block', margin: 'auto', marginTop: 4 }} />
+          <p>Loading subscriptions...</p>
+        </div>
+      ) : (
+        <div className="subscriptions-table">
+          <TableContainer
+            sx={{
+              maxHeight: 680,
+              marginLeft: 28,
+              maxWidth: '85.5%',
+              marginTop: '30px',
+              boxShadow: '0 2px 10px rgba(0, 0, 0, 0.5)',
+            }}
+          >
+            <div className="report-top-bar">
+              <h1 className="subcription-list">Active Jeep Subscriptions</h1>
+              <div className="sort-container-subs">
+                <select onChange={handleSubscriptionTypeChange} value={subscriptionTypeFilter}>
+                  <option value="">Filter By Subscription Type</option>
+                  <option value="Monthly">Monthly</option>
+                  <option value="Quarterly">Quarterly</option>
+                  <option value="Annually">Annually</option>
+                </select>
+              </div>
+            </div>
 
-          {filteredData.length === 0 ? (
-            <p>No active subscriptions available</p>
-          ) : (
-            <Table sx={{ '& .MuiTableCell-root': { padding: '10px' } }}>
+            <Table sx={{ '& .MuiTableCell-root': { padding: '15px' } }}>
               <TableHead>
                 <TableRow>
                   <TableCell>ID</TableCell>
@@ -119,40 +154,59 @@ const Jeep = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-              {paginatedData.map((item) => {
-                const isExpired = moment().isAfter(item.endDate);
-                return (
-                  <TableRow key={item._id}>
-                    <TableCell>{item._id}</TableCell>
-                    <TableCell>{item.driver?.name}</TableCell> {/* Ensure you extract a string from the object */}
-                    <TableCell>{item.subscriptionType}</TableCell>
-                    <TableCell>{item.vehicleType}</TableCell>
-                    <TableCell>{moment(item.startDate).format('MMMM DD, YYYY')}</TableCell>
-                    <TableCell>{moment(item.endDate).format('MMMM DD, YYYY')}</TableCell>
-                    <TableCell>{isExpired ? 'Expired' : item.status}</TableCell>
+                {paginatedData.length > 0 ? (
+                  paginatedData.map((item) => (
+                    <TableRow key={item._id}>
+                      <TableCell>{item.id}</TableCell>
+                      <TableCell>{item.driver?.name || 'N/A'}</TableCell>
+                      <TableCell>{item.subscriptionType}</TableCell>
+                      <TableCell>{item.vehicleType}</TableCell>
+                      <TableCell>{moment(item.startDate).format('MMMM DD, YYYY')}</TableCell>
+                      <TableCell>{moment(item.endDate).format('MMMM DD, YYYY')}</TableCell>
+                      <TableCell>{item.status}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={7} align="center">
+                      No Active Jeep Subscriptions Found.
+                    </TableCell>
                   </TableRow>
-                );
-              })}
-            </TableBody>
-
+                )}
+              </TableBody>
             </Table>
-          )}
-        </TableContainer>
+          </TableContainer>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleDownloadPDF}
+            style={{
+              marginTop: '20px',
+              display: 'block',
+              marginLeft: '220px',
+              marginRight: 'auto',
+              width: '200px',
+            }}
+          >
+            Download as PDF
+          </Button>
 
-        <TablePagination
-          rowsPerPageOptions={[10, 20, 30]}
-          component="div"
-          count={filteredData.length}
-          page={page}
-          rowsPerPage={rowsPerPage}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleRowsPerPageChange}
-        />
-        {error && <div className="error-message">{error}</div>}
-      </div>
+          <TablePagination
+            rowsPerPageOptions={[10, 20, 30]}
+            component="div"
+            count={filteredData.length}
+            page={page}
+            rowsPerPage={rowsPerPage}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleRowsPerPageChange}
+          />
+
+          {error && <div className="error-message">{error}</div>}
+        </div>
+      )}
       <TabBar />
     </div>
   );
 };
 
-export default Jeep;
+export default ActiveJeepSubscriptions;

@@ -11,11 +11,13 @@ import {
   Paper,
   Button,
   TablePagination,
+  CircularProgress,
 } from "@mui/material";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import "./driverReport.css";
 import TabBar from "../tab-bar/tabBar";
+
 const API_URL =
   "https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/subs/subscription/";
 
@@ -24,14 +26,18 @@ const ExpiredSubs = () => {
   const [nameSearch, setNameSearch] = useState("");
   const [page, setPage] = useState(0); // Pagination: Current page
   const [rowsPerPage, setRowsPerPage] = useState(10); // Pagination: Rows per page
+  const [loading, setLoading] = useState(false);
 
   // Fetch data from the API
   const fetchData = useCallback(async () => {
+    setLoading(true);
     try {
       const response = await axios.get(API_URL);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -101,69 +107,93 @@ const ExpiredSubs = () => {
 
   return (
     <div>
-      <div className="report-main-content">
-        <h1>Expired Subscription list</h1>
-        <div>
-           <Button
-          variant="contained"
-          sx={{
-            display: "block",
-          }}
-          onClick={handleDownloadPDF}
-        >
-          Download PDF
-        </Button>
-        </div>
-       
-
-        {/* Table with pagination */}
-        <TableContainer
-          component={Paper}
-          sx={{
-            width: "91.5%",
-            margin: "20px auto",
-            boxShadow: "0 2px 10px rgba(0, 0, 0, 0.3)",
-          }}
-          className="table-container"
-        >
-          <Table stickyHeader>
-            <TableHead>
-              <TableRow>
-                <TableCell>ID</TableCell>
-                <TableCell>Driver</TableCell>
-                <TableCell>Vehicle Type</TableCell>
-                <TableCell>Subscription Type</TableCell>
-                <TableCell>End Date</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {paginatedData.map((item, index) => (
-                <TableRow key={item.id || `${page}-${index}`}>
-                  <TableCell>{item.id || index + 1 + page * rowsPerPage}</TableCell>
-                  <TableCell>{item.driver}</TableCell>
-                  <TableCell>{item.vehicleType}</TableCell>
-                  <TableCell>{item.subscriptionType}</TableCell>
-                  <TableCell>
-                    {moment(item.endDate).format("MMMM DD, YYYY")}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-
-        {/* Pagination Component */}
-        <TablePagination
-          component="div"
-          count={filteredData.length} // Total rows count
-          page={page} // Current page
-          onPageChange={handleChangePage} // Handler for page change
-          rowsPerPage={rowsPerPage} // Rows per page
-          onRowsPerPageChange={handleChangeRowsPerPage} // Handler for rows per page change
-          rowsPerPageOptions={[5, 10, 20]} // Options for rows per page
+      {loading ? (
+        <CircularProgress
+          sx={{ display: "block", margin: "auto", marginTop: 4 }}
         />
-      </div>
-      <TabBar/>
+      ) : (
+        <div className="report-main-content">
+          {/* Report Header */}
+          <div className="report-top-bar">
+            <h1>Expired Subscription List</h1>
+          </div>
+
+          {/* Table with pagination */}
+          <TableContainer
+            component={Paper}
+            sx={{
+              width: "100%",
+              margin: "20px auto",
+              boxShadow: "0 2px 10px rgba(0, 0, 0, 0.3)",
+            }}
+            className="table-container"
+          >
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>ID</TableCell>
+                  <TableCell>Driver</TableCell>
+                  <TableCell>Vehicle Type</TableCell>
+                  <TableCell>Subscription Type</TableCell>
+                  <TableCell>End Date</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {paginatedData.length > 0 ? (
+                  paginatedData.map((item, index) => (
+                    <TableRow key={item.id || `${page}-${index}`}>
+                      <TableCell>
+                        {item.id || index + 1 + page * rowsPerPage}
+                      </TableCell>
+                      <TableCell>{item.driver}</TableCell>
+                      <TableCell>{item.vehicleType}</TableCell>
+                      <TableCell>{item.subscriptionType}</TableCell>
+                      <TableCell>
+                        {moment(item.endDate).format("MMMM DD, YYYY")}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} align="center">
+                      No Expired Subscribers Found.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+
+          {/* Download Button */}
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleDownloadPDF}
+            style={{
+              marginTop: "20px",
+              display: "block",
+              marginRight: "auto",
+              width: "200px",
+            }}
+          >
+            Download as PDF
+          </Button>
+
+          {/* Pagination Component */}
+          <TablePagination
+            component="div"
+            count={filteredData.length} // Total rows count
+            page={page} // Current page
+            onPageChange={handleChangePage} // Handler for page change
+            rowsPerPage={rowsPerPage} // Rows per page
+            onRowsPerPageChange={handleChangeRowsPerPage} // Handler for rows per page change
+            rowsPerPageOptions={[5, 10, 20]} // Options for rows per page
+          />
+        </div>
+      )}
+
+      {/* TabBar */}
+      <TabBar />
     </div>
   );
 };

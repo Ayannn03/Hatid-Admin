@@ -4,8 +4,8 @@ import axios from 'axios';
 import moment from 'moment';
 import { IoSearch } from "react-icons/io5";
 import './commuters.css';
-import { MdEmail, MdPhone, MdLocationOn, MdCake, MdEvent, MdAccessTime, MdSubscriptions, MdDirectionsCar, MdPalette, MdCalendarToday} from "react-icons/md";
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TablePagination } from '@mui/material';
+import { MdEmail, MdPhone, MdLocationOn, MdCalendarToday} from "react-icons/md";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TablePagination, CircularProgress } from '@mui/material';
 
 const API_URL = 'https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/users';
 
@@ -98,7 +98,8 @@ const Commuters = () => {
             <h2 className="profile-title">User Profile</h2>
             <div className="profile-container">
               <div className="commuter-profile-image">
-              <img
+                <div className='commuter-image'>
+                <img
                       src={profileData.profilePic || "./defaultPic.jpg"}
                       alt="Profile"
                       className="profile-pic"
@@ -106,21 +107,22 @@ const Commuters = () => {
                 <p>{profileData.name}</p>
                 <p><strong>Last Login:</strong> {profileData.lastLogin}</p>
                 <p><strong>Violation:</strong> {profileData.violations?.length > 0 ? "Yes" : "No"}</p>
+                </div>
               </div>
               <div className="user-details">
-                <p><strong>ID:</strong> {profileData._id}</p>
-                <p><MdEmail/> <strong>Email:</strong> {profileData.email}</p>
-                <p> <MdPhone/> <strong>Phone:</strong> {profileData.number}</p>
-                <p><MdLocationOn/> <strong>Address:</strong> {profileData.address}</p>
-                <p><MdCalendarToday/> <strong>Birthday:</strong> {profileData?.birthday ? moment(profileData.birthday).format("MMMM DD, YYYY") : 'N/A'}</p>
-                <p><MdCalendarToday/> <strong>Join Date:</strong> {profileData.createdAt ? moment(profileData.createdAt).format("MMMM DD, YYYY") : 'N/A'}</p>
+                <p><strong>ID:</strong> <br />{profileData._id}</p>
+                <p><MdEmail/> <strong>Email:</strong><br /> {profileData.email}</p>
+                <p> <MdPhone/> <strong>Phone:</strong><br /> {profileData.number}</p>
+                <p><MdLocationOn/> <strong>Address:</strong> <br />{profileData.address}</p>
+                <p><MdCalendarToday/> <strong>Birthday:</strong> <br />{profileData?.birthday ? moment(profileData.birthday).format("MMMM DD, YYYY") : 'N/A'}</p>
+                <p><MdCalendarToday/> <strong>Join Date:</strong> <br />{profileData.createdAt ? moment(profileData.createdAt).format("MMMM DD, YYYY") : 'N/A'}</p>
               </div>
             </div>
           </div>
         </div>
       )}
       {loading ? (
-        <div className="loading">Loading...</div>
+       <CircularProgress sx={{ display: "block", margin: "auto", marginTop: 4 }} />
       ) : (
         <div className='passenger-table'>
           <TableContainer
@@ -180,6 +182,7 @@ const Commuters = () => {
                 ))}
               </TableBody>
             </Table>
+          
           </TableContainer>
           <TablePagination
             rowsPerPageOptions={[10, 20, 30]}

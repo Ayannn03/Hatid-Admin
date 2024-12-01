@@ -15,6 +15,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  CircularProgress
 } from "@mui/material";
 import { IoSearch } from "react-icons/io5";
 
@@ -31,12 +32,14 @@ export default function Applications() {
   const [confirmModalOpen, setConfirmModalOpen] = useState(false); // Modal for confirming approval
   const [previewImage, setPreviewImage] = useState(null); // For previewing the clicked image
   const [imagePreviewModalOpen, setImagePreviewModalOpen] = useState(false); // State for new preview modal
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     fetchData();
   }, []);
 
   const fetchData = async () => {
+    setLoading(true);
     try {
       const response = await axios.get(APPLICATION_API_URL);
       const dataWithId = response.data.map((item, index) => ({
@@ -47,6 +50,8 @@ export default function Applications() {
       setError(null); // Clear error on successful fetch
     } catch (error) {
       console.error("Error fetching data:", error);
+    } finally{
+      setLoading(false);
     }
   };
 
@@ -80,6 +85,28 @@ export default function Applications() {
       console.error("Error handling driver approval:", error);
     }
   };
+
+  const handleApplicationRejection = async (applicationId) => {
+    try {
+      if (!applicationId) {
+        throw new Error("Application ID is required");
+      }
+  
+      const response = await axios.delete(
+        `https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/driver/reject/${applicationId}`
+      );
+  
+      if (response.status === 200) {
+        console.log("Driver rejected:", response.data);
+        fetchData(); // Refresh applications after rejection
+      } else {
+        console.error("Failed to reject driver:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error handling driver rejection:", error);
+    }
+  };
+  
 
   const openModal = (applicationId, images) => {
     setSelectedApplicationId(applicationId);
@@ -198,12 +225,14 @@ export default function Applications() {
         </DialogActions>
       </Dialog>
 
-      {/* Table Container */}
+      {loading ? (
+       <CircularProgress sx={{ display: "block", margin: "auto", marginTop: 4 }} />
+      ) : (
       <TableContainer
         component={Paper}
         sx={{
-          marginLeft: 30,
-          width: "85%",
+          marginLeft: 32,
+          width: "84%",
           marginTop: 3,
           boxShadow: "0 2px 10px rgba(0, 0, 0, 0.3)",
         }}
@@ -286,7 +315,16 @@ export default function Applications() {
                     >
                       Accept
                     </button>
-                  </TableCell>
+
+                    <button
+                      className="view-button"
+                      onClick={() => handleApplicationRejection(application.id)}
+                      style={{ marginLeft: "8px", backgroundColor: "#FF5555", color: "#fff" }}
+                      disabled={application.accountVerified === "approved"}
+                    >
+                      Reject
+                    </button>
+                                    </TableCell>
                 </TableRow>
               ))
             ) : (
@@ -299,8 +337,9 @@ export default function Applications() {
           </TableBody>
         </Table>
       </TableContainer>
-
+      )}
       <TabBar />
     </div>
+
   );
 }
