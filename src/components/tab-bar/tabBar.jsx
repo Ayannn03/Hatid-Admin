@@ -100,7 +100,7 @@ const TabBar = () => {
         </div>
         <ul className="button">
           <li className="nav-item">
-            <Link to="/" className="nav-link">
+            <Link to="/dash" className="nav-link">
               <BarChart2 className="icon" /> DASHBOARD
             </Link>
           </li>
@@ -112,6 +112,11 @@ const TabBar = () => {
           <li className={`nav-item ${isDriversMenuOpen ? "open" : ""}`}>
             <button className="nav-link toggle-btn" onClick={toggleDriversMenu}>
               <Car className="icon" /> Drivers Management
+              {applications.length > 0 && (
+                      <span className="icon-button__badge">
+                        {applications.length}
+                      </span>
+                    )}
               {isDriversMenuOpen ? (
                 <BsChevronUp className="icon-right" />
               ) : (
@@ -132,6 +137,11 @@ const TabBar = () => {
                   </Link>
                 </li>
                 <li>
+                  <Link to="/suspend" className="nav-link">
+                    <FileText className="icon" /> Suspend
+                  </Link>
+                </li>
+                <li>
                   <Link to="/applications" className="nav-link">
                     <FileCheck className="icon" /> Applications
                     {applications.length > 0 && (
@@ -147,7 +157,7 @@ const TabBar = () => {
 
             <li className={`nav-item ${isSubsMenuOpen ? "open" : ""}`}>
             <button className="nav-link toggle-btn" onClick={toggleSubsMenu}>
-              <DollarSign className="icon" /> Subscription
+            <p style={{ fontSize: "20px", color: "white" }}>₱</p> Subscription
               {isSubsMenuOpen ? (
                 <BsChevronUp className="icon-right" />
               ) : (
@@ -162,17 +172,12 @@ const TabBar = () => {
               <ul className="sub-menu">
                 <li className="nav-item">
                   <Link to="/subscription" className="nav-link">
-                    <Car className="icon" /> Tricycle
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/jeepney" className="nav-link">
-                    <Car className="icon" /> Jeep
+                    <Car className="icon" /> Subscribers
                   </Link>
                 </li>
                 <li>
                   <Link to="/expired" className="nav-link">
-                    <Car className="icon" /> Expired
+                    <Car className="icon" /> Expired Subscriptions
                   </Link>
                 </li>
                 <li>
@@ -224,18 +229,18 @@ const TabBar = () => {
                   </Link>
                 </li>
                 <li>
+                  <Link to="/cancel" className="nav-link">
+                    <FileCheck className="icon" /> Cancelation
+                  </Link>
+                </li>
+                <li>
                   <Link to="/booking" className="nav-link">
                     <FileCheck className="icon" /> Booking
                   </Link>
                 </li>    
                 <li>
-                  <Link to="/jeepRep" className="nav-link">
-                    <FileCheck className="icon" /> Jeepney Report
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/tricycleRep" className="nav-link">
-                    <FileCheck className="icon" /> Tricycle Report
+                  <Link to="/active" className="nav-link">
+                    <FileCheck className="icon" /> Subscribers Report
                   </Link>
                 </li>
                 <li>
@@ -261,12 +266,22 @@ const TabBar = () => {
               <ul className="sub-menu">
                 <li className="nav-item">
                   <Link to="/fare" className="nav-link">
-                    <Car className="icon" /> Fare
+                  <p style={{ fontSize: "20px", color: "white" }}>₱</p> Fare
                   </Link>
                 </li>
                 <li>
                   <Link to="/requirements" className="nav-link">
                     <Car className="icon" /> Requirements
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/rate" className="nav-link">
+                    <Car className="icon" /> Ratings
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/contact" className="nav-link">
+                    <Car className="icon" /> Contact
                   </Link>
                 </li>
               </ul>

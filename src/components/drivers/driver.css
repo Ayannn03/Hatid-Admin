@@ -15,20 +15,18 @@ li a {
   align-items: center;
   gap: 40px;
   width: 100%;
-  padding: 25px ;
+  padding: 10px  20px 0 20px;
   background-color: white;
 
 }
 
-
-
 /* Search and Sort Containers */
 .sort-container select {
-  padding: 12px;
+  padding: 10px;
   cursor: pointer;
   border-radius: 5px;
-  margin-left: 40px;
-  font-size: 14px;
+  margin-left: 20px;
+  font-size: 13px;
   border: 1px solid #ccc;
 }
 .sort-container{
@@ -143,7 +141,7 @@ li a {
 }
 
 .profile-details{
- margin-left: 200px;
+ margin-left: 210px;
  padding:  12px;
  background-color: rgba(255, 255, 255, 0.3); 
  border-radius: 5px;
@@ -199,11 +197,12 @@ li a {
   border-radius: 8px;
   padding: 4px;
   backdrop-filter: blur(8px);
+  margin-left: -12px;
 }
 
 .tab-bar-button {
   padding: 10px 15px;
-  font-size: 13px;
+  font-size: 12px;
   border: none;
   cursor: pointer;
   border-radius: 4px;
@@ -235,6 +234,10 @@ li a {
   height: auto;
   border: 1px solid #ddd;
   border-radius: 5px;
+}
+
+h5{
+  width: 100%;
 }
 
 
@@ -277,7 +280,6 @@ li a {
   max-height: 60vh;
 
 }
-
 
 
 .image-wrapper img {

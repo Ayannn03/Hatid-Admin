@@ -15,6 +15,7 @@ import "./violations.css";
 
 const API_URL =
   "https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/violate/violation";
+const API_DRIVER = "https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/driver/approved-drivers";
 
 const Violations = () => {
   const [data, setData] = useState([]);
@@ -22,6 +23,7 @@ const Violations = () => {
   const [showModal, setShowModal] = useState(false);
   const [profileData, setProfileData] = useState(null);
   const [nameSearch, setNameSearch] = useState("");
+  const [driver, setDriver] = useState("");
   const [sortValue, setSortValue] = useState("");
   const [loading, setLoading] = useState(true); // Track loading state
 
@@ -99,6 +101,13 @@ const Violations = () => {
     setShowModal(true);
   };
 
+  // Function to determine color based on violation length
+  const getColorBasedOnViolationLength = (length) => {
+    if (length > 5) return "#E3242B"; // Light red
+    if (length > 3) return "rgba(255, 165, 0, 0.1)"; // Light orange
+    return "rgba(0, 128, 0, 0.1)"; // Light green
+  };
+
   return (
     <div className="violation-main-content">
       {/* Modal for viewing profile details */}
@@ -127,13 +136,12 @@ const Violations = () => {
                       <div className="violation-details">
                         <TableContainer
                           sx={{
-                            maxHeight: 600,
+                            maxHeight: 400,
                             borderRadius: "8px",  
-                            overflow: "hidden", 
+                            overflow: "auto", 
                             boxShadow: "0 2px 10px rgba(0, 0, 0, 0.5)", 
                           }}
                         >
-                          <h2 className="violation">Violation Reports</h2>
                           <Table>
                             <TableHead>
                               <TableRow>
@@ -164,48 +172,47 @@ const Violations = () => {
           </div>
         </div>
       )}
-           {loading ? (
+
+      {loading ? (
         <div className="loading-container">
           <CircularProgress sx={{ display: "block", margin: "auto", marginTop: 4 }} />
           <p>Loading bookings...</p>
         </div>
       ) : (
-      <div className="violations-table">
-        <TableContainer
-          sx={{
-            maxHeight: 680,
-            marginLeft: 28,
-            maxWidth: "86%",
-            marginTop: "20px",
-            boxShadow: "0 2px 10px rgba(0, 0, 0, 0.5)",
-          }}
-        >
-          <div className="violation-top-bar">
-            <h1 className="violation-list">Violation List</h1>
-            <div className="sort-container">
-              <select onChange={(e) => setSortValue(e.target.value)} value={sortValue}>
-                <option value="">Sort By:</option>
-                {sortOptions.map((item, index) => (
-                  <option value={item} key={index}>
-                    {item}
-                  </option>
-                ))}
-              </select>
+        <div className="violations-table">
+          <TableContainer
+            sx={{
+              maxHeight: 680,
+              marginLeft: 28,
+              maxWidth: "86%",
+              marginTop: "20px",
+              boxShadow: "0 2px 10px rgba(0, 0, 0, 0.5)",
+            }}
+          >
+            <div className="violation-top-bar">
+              <h1 className="violation-list">Violation List</h1>
+              <div className="sort-container">
+                <select onChange={(e) => setSortValue(e.target.value)} value={sortValue}>
+                  <option value="">Sort By:</option>
+                  {sortOptions.map((item, index) => (
+                    <option value={item} key={index}>
+                      {item}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="search-bar-container">
+                <input
+                  className="input-design"
+                  type="text"
+                  placeholder="Search"
+                  value={nameSearch}
+                  onChange={(e) => setNameSearch(e.target.value)}
+                />
+                <IoSearch className="search-icon" />
+              </div>
             </div>
-            <div className="search-bar-container">
-              <input
-                className="input-design"
-                type="text"
-                placeholder="Search"
-                value={nameSearch}
-                onChange={(e) => setNameSearch(e.target.value)}
-              />
-              <IoSearch className="search-icon" />
-            </div>
-          </div>
 
-          {/* Loading Spinner */}
-      
             <Table sx={{ "& .MuiTableCell-root": { padding: "12px", textAlign: "center" } }}>
               <TableHead>
                 <TableRow>
@@ -217,9 +224,9 @@ const Violations = () => {
               <TableBody>
                 {sortedData.map(([driverId, value]) => (
                   <TableRow key={driverId}>
-                    <TableCell>{value.driver?.name || "N/A"}</TableCell>
-                    <TableCell>{value.violations.length}</TableCell>
-                    <TableCell>
+                    <TableCell style={{ width: "200px", backgroundColor: getColorBasedOnViolationLength(value.violations.length) }}>{value.driver?.name || "N/A"}</TableCell>
+                    <TableCell style={{ width: "200px", backgroundColor: getColorBasedOnViolationLength(value.violations.length) }}>{value.violations.length}</TableCell>
+                    <TableCell style={{ width: "200px", backgroundColor: getColorBasedOnViolationLength(value.violations.length) }}>
                       <button
                         className="view-button"
                         onClick={() => handleViewProfile(driverId)}
@@ -231,12 +238,10 @@ const Violations = () => {
                 ))}
               </TableBody>
             </Table>
-       
-        </TableContainer>
-        {error && <div className="error-message">{error}</div>}
-      </div>
-         )}
-      <TabBar />
+          </TableContainer>
+        </div>
+      )}
+      <TabBar/>
     </div>
   );
 };

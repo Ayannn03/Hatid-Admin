@@ -12,6 +12,10 @@ import {
   TablePagination,
   CircularProgress,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle
 } from "@mui/material";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
@@ -26,7 +30,10 @@ const ActiveTricycleSubscriptions = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [subscriptionTypeFilter, setSubscriptionTypeFilter] = useState("");
+  const [vehicleTypeFilter, setVehicleTypeFilter] = useState('');
   const [loading, setLoading] = useState(true);
+  const [pdfUrl, setPdfUrl] = useState('');
+  const [openPreview, setOpenPreview] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -56,18 +63,22 @@ const ActiveTricycleSubscriptions = () => {
     setSubscriptionTypeFilter(e.target.value);
   };
 
+  const handleVehicleTypeChange = (e) => {
+    setVehicleTypeFilter(e.target.value);
+  };
+
   const filteredData = useMemo(() => {
     return data.filter((item) => {
-      const vehicleType = item.vehicleType?.toLowerCase() || "";
+      const vehicleType = item.vehicleType?.toLowerCase() || '';
       const isExpired = moment().isAfter(moment(item.endDate));
+
       return (
-        vehicleType === "tricycle" &&
-        (subscriptionTypeFilter === "" ||
-          item.subscriptionType === subscriptionTypeFilter) &&
+        (vehicleTypeFilter === '' || vehicleType === vehicleTypeFilter.toLowerCase()) &&
+        (subscriptionTypeFilter === '' || item.subscriptionType === subscriptionTypeFilter) &&
         !isExpired
       );
     });
-  }, [data, subscriptionTypeFilter]);
+  }, [data, vehicleTypeFilter, subscriptionTypeFilter]);
 
   const paginatedData = useMemo(() => {
     return filteredData.slice(
@@ -82,17 +93,17 @@ const ActiveTricycleSubscriptions = () => {
 
   const handleRowsPerPageChange = (event) => {
     setRowsPerPage(+event.target.value);
-    setPage(0);
+    setPage(0); // Reset to the first page when changing rows per page
   };
 
-  const handleDownloadPDF = () => {
+  const generatePDF = () => {
     const doc = new jsPDF();
-
+  
     doc.setFontSize(18);
     doc.text("Active Tricycle Subscriptions Report", 14, 20);
-
-    const tableData = filteredData.map((item) => [
-      item.id,
+  
+    const tableData = filteredData.map((item, index) => [
+      page * rowsPerPage + index + 1, 
       item.driver?.name || "N/A",
       item.subscriptionType,
       item.vehicleType,
@@ -100,11 +111,11 @@ const ActiveTricycleSubscriptions = () => {
       moment(item.endDate).format("MMMM DD, YYYY"),
       item.status,
     ]);
-
+  
     doc.autoTable({
       head: [
         [
-          "ID",
+          "Number", 
           "Driver",
           "Subscription Type",
           "Vehicle Type",
@@ -119,10 +130,51 @@ const ActiveTricycleSubscriptions = () => {
       headStyles: { fillColor: [22, 160, 133] },
       margin: { left: 14, right: 14 },
     });
-
+  
+    // Generate PDF as a data URL for preview
+    const pdfDataUrl = doc.output("dataurlstring");
+    setPdfUrl(pdfDataUrl); // Set the PDF data URL to preview it
+    setOpenPreview(true); // Open preview modal
+  };
+  
+  const handleDownloadPDF = () => {
+    const doc = new jsPDF();
+  
+    doc.setFontSize(18);
+    doc.text("Active Tricycle Subscriptions Report", 14, 20);
+  
+    const tableData = filteredData.map((item, index) => [
+      page * rowsPerPage + index + 1, 
+      item.driver?.name || "N/A",
+      item.subscriptionType,
+      item.vehicleType,
+      moment(item.startDate).format("MMMM DD, YYYY"),
+      moment(item.endDate).format("MMMM DD, YYYY"),
+      item.status,
+    ]);
+  
+    doc.autoTable({
+      head: [
+        [
+          "Number", 
+          "Driver",
+          "Subscription Type",
+          "Vehicle Type",
+          "Start Date",
+          "End Date",
+          "Status",
+        ],
+      ],
+      body: tableData,
+      startY: 30,
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [22, 160, 133] },
+      margin: { left: 14, right: 14 },
+    });
+  
     doc.save("Active_Tricycle_Subscriptions_Report.pdf");
   };
-
+  
   return (
     <div className="subs-main-content">
       {loading ? (
@@ -142,8 +194,13 @@ const ActiveTricycleSubscriptions = () => {
             }}
           >
             <div className="report-top-bar">
-              <h1 className="subcription-list">Active Jeep Subscriptions</h1>
+              <h1 className="subcription-list">Active Subscriptions</h1>
               <div className="sort-container-subs">
+                <select onChange={handleVehicleTypeChange} value={vehicleTypeFilter}>
+                  <option value="">All Vehicle Type</option>
+                  <option value="Tricycle">Tricycle</option>
+                  <option value="Jeep">Jeep</option>
+                </select>
                 <select
                   onChange={handleSubscriptionTypeChange}
                   value={subscriptionTypeFilter}
@@ -156,10 +213,10 @@ const ActiveTricycleSubscriptions = () => {
               </div>
             </div>
 
-            <Table sx={{ "& .MuiTableCell-root": { padding: "15px" } }}>
+            <Table sx={{ "& .MuiTableCell-root": { padding: "12px" } }}>
               <TableHead>
                 <TableRow>
-                  <TableCell>ID</TableCell>
+                  <TableCell>Number</TableCell>
                   <TableCell>Driver</TableCell>
                   <TableCell>Subscription Type</TableCell>
                   <TableCell>Vehicle Type</TableCell>
@@ -170,9 +227,9 @@ const ActiveTricycleSubscriptions = () => {
               </TableHead>
               <TableBody>
                 {paginatedData.length > 0 ? (
-                  paginatedData.map((item) => (
+                  paginatedData.map((item, index) => (
                     <TableRow key={item._id}>
-                      <TableCell>{item.id}</TableCell>
+                      <TableCell>{page * rowsPerPage + index + 1}</TableCell>
                       <TableCell>{item.driver?.name || "N/A"}</TableCell>
                       <TableCell>{item.subscriptionType}</TableCell>
                       <TableCell>{item.vehicleType}</TableCell>
@@ -194,16 +251,15 @@ const ActiveTricycleSubscriptions = () => {
           <Button
             variant="contained"
             color="primary"
-            onClick={handleDownloadPDF}
+            onClick={generatePDF}
             style={{
-              marginTop: "20px",
-              display: "block",
+              marginTop: '20px',
+              display: 'block',
               marginLeft: "220px",
-              marginRight: "auto",
-              width: "200px",
+              width: '200px',
             }}
           >
-            Download as PDF
+            Preview PDF
           </Button>
 
           <TablePagination
@@ -219,6 +275,38 @@ const ActiveTricycleSubscriptions = () => {
           {error && <div className="error-message">{error}</div>}
         </div>
       )}
+
+      <Dialog open={openPreview} onClose={() => setOpenPreview(false)} maxWidth="lg" fullWidth>
+        <DialogTitle>PDF Preview</DialogTitle>
+        <DialogContent>
+          <iframe
+            title="PDF Preview"
+            src={pdfUrl}
+            width="100%"
+            height="700px"
+            style={{ border: "none" }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenPreview(false)} color="primary">
+            Close
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleDownloadPDF}
+            style={{
+              marginTop: "20px",
+              display: "block",
+              marginLeft: "220px",
+              width: "200px",
+            }}
+          >
+            Download as PDF
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <TabBar />
     </div>
   );

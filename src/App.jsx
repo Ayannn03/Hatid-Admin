@@ -19,10 +19,12 @@ import Booking from './components/report/bookingReport'
 import ExpiredSubs from './components/subscription/expiredSubs'
 import SubscriptionRequest from './components/subscription/subscriptionReq'
 import Expired from './components/report/expired'
-import JeepSubs from './components/report/subsJeep'
-import TricycleSubs from './components/report/subsTricycle'
+import Active from './components/report/subsActive'
+import Cancel from './components/report/cancel'
+import Rate from './components/settings/ratingSettings'
+import Contact from './components/settings/contact'
+import Suspended from './components/drivers/suspended'
 import Payment from './components/payment/payment';
-
 
 
 
@@ -32,7 +34,7 @@ const App = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/dash" element={<Dashboard />} />
         <Route path="/driver" element={<Driver/>} />
         <Route path="/commuters" element={<Commuters />} />
         <Route path="/blocklist" element={<Blocklist  />} />
@@ -51,9 +53,12 @@ const App = () => {
          <Route path='/Expired' element = {<ExpiredSubs/>}/>
          <Route path='/request' element = {<SubscriptionRequest/>}/>
          <Route path='/expiredRep' element = {<Expired/>}/>
-         <Route path='/jeepRep' element = {<JeepSubs/>}/>
-         <Route path='/TricycleRep' element = {<TricycleSubs/>}/>
-        <Route path="/signup" element={<Signup />} />
+         <Route path='/contact' element = {<Contact/>}/>
+         <Route path='/rate' element = {<Rate/>}/>
+         <Route path='/suspend' element = {<Suspended/>}/>
+         <Route path='/active' element = {<Active/>}/>
+         <Route path='/cancel' element = {<Cancel/>}/>
+        <Route path="/" element={<Signup />} />
       </Routes>
     </Router>
   );

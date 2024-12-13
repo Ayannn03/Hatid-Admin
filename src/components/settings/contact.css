@@ -1,0 +1,14 @@
+.contact-main-content{
+    margin-left: 260px;
+    margin-top: 20px;
+  }
+  
+.add-contact{
+    padding: 15px;
+    display: flex;
+    gap: 20px;
+}
+
+.contact-top-bar{
+    padding: 20px;
+  }

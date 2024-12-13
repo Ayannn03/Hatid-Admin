@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, Suspense } from "react";
 import axios from "axios";
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, CircularProgress } from "@mui/material";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import TabBar from "../tab-bar/tabBar";
@@ -12,6 +12,8 @@ function TopPerformingReport() {
   const [groupedRatings, setGroupedRatings] = useState([]); // Store grouped ratings
   const [loading, setLoading] = useState(true); // Loading state
   const [error, setError] = useState(null); // Error state
+  const [openPreview, setOpenPreview] = useState(false); // State for preview modal
+  const [pdfUrl, setPdfUrl] = useState(""); // Store generated PDF data URL
 
   // Fetch ratings data
   const fetchData = useCallback(async () => {
@@ -60,7 +62,38 @@ function TopPerformingReport() {
     fetchData();
   }, [fetchData]);
 
-  // Generate PDF for Top Performing Driver report
+  // Generate PDF for Top Performing Driver report (Preview)
+  const generatePDF = () => {
+    const doc = new jsPDF();
+
+    // Add title
+    doc.setFontSize(16);
+    doc.text("Top Performing Drivers Report", 14, 20);
+
+    // Prepare table data
+    const tableData = groupedRatings.map((rating) => [
+      rating.name,  // Driver Name
+      `${rating.totalRating} pts`, // Total Ratings
+      rating.count, // Rating Count
+    ]);
+
+    // Add table to PDF
+    doc.autoTable({
+      head: [["Driver Name", "Total Ratings", "Rating Count"]],
+      body: tableData,
+      startY: 30,
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [44, 62, 80] }, // Navy header color
+      margin: { left: 14, right: 14 },
+    });
+
+    // Generate PDF as a data URL for preview
+    const pdfDataUrl = doc.output("dataurlstring");
+    setPdfUrl(pdfDataUrl); // Set the PDF data URL to preview it
+    setOpenPreview(true); // Open preview modal
+  };
+
+  // Handle download of the PDF
   const downloadPDF = () => {
     const doc = new jsPDF();
 
@@ -94,15 +127,12 @@ function TopPerformingReport() {
       <div className="report-main-content">
        
         {loading ? (
-          <CircularProgress
-            sx={{ display: 'block', margin: 'auto', marginTop: '20px' }}
-          />
+          <CircularProgress sx={{ display: 'block', margin: 'auto', marginTop: '20px' }} />
         ) : error ? (
           <div>{error}</div>
         ) : groupedRatings.length === 0 ? (
           <div>No top performing drivers found</div>
         ) : (
-          
           <>
             <TableContainer
               component={Paper}
@@ -114,7 +144,7 @@ function TopPerformingReport() {
               }}
             >
                <div className="report-top-bar">
-               <h2>Top Performing Drivers Report</h2>
+                 <h2>Top Performing Drivers Report</h2>
                </div>
               <Table>
                 <TableHead>
@@ -137,23 +167,56 @@ function TopPerformingReport() {
             </TableContainer>
 
             <div>
-            <Button
-            variant="contained"
-            color="primary"
-            onClick={downloadPDF}
-            style={{
-              marginTop: '20px',
-              display: 'block',
-              marginRight: 'auto',
-              width: '200px',
-            }}
-          >
-            Download as PDF
-          </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={generatePDF}
+                style={{
+                  marginTop: '20px',
+                  display: 'block',
+                  marginRight: 'auto',
+                  width: '200px',
+                }}
+              >
+                Preview PDF
+              </Button>
             </div>
           </>
         )}
       </div>
+
+  
+      <Dialog open={openPreview} onClose={() => setOpenPreview(false)} maxWidth="lg" fullWidth>
+        <DialogTitle>PDF Preview</DialogTitle>
+        <DialogContent>
+          <iframe
+            title="PDF Preview"
+            src={pdfUrl}
+            width="100%"
+            height="700px"
+            style={{ border: "none" }}
+          />
+        </DialogContent>
+        
+        <DialogActions>
+        <Button onClick={() => setOpenPreview(false)} color="primary">
+            Close
+          </Button>
+          <Button
+                variant="contained"
+                color="primary"
+                onClick={downloadPDF}
+                style={{
+                  marginTop: '20px',
+                  display: 'block',
+                  marginRight: 'auto',
+                  width: '200px',
+                }}
+              >
+                Download as PDF
+              </Button>
+        </DialogActions>
+      </Dialog>
 
       <Suspense fallback={<div>Loading...</div>}>
         <TabBar />
