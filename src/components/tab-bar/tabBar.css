@@ -1,35 +1,142 @@
-/* Sidebar Styling */
+body {
+  padding: 20px;
+  height: 100vh;
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  overflow: hidden;
+  background: #eff6ff;
+  
+}
+
 .tabBar {
-    display: flex;
-    flex-direction: column; /* Stack items vertically */
-    width: 200px; /* Adjust width as needed */
-    background-color: #2c3e50; /* Dark background color */
-    height: 100vh; /* Full height of the viewport */
-    padding-top: 20px; /* Add some padding at the top */
-    position: fixed; /* Fix the sidebar position */
-    top: 0;
-    left: 0;
-    
+  display: flex;
+  flex-direction: column;
+  width: 250px;
+  background: #64b5f6;
+  height: 100vh;
+  padding-top: 10px;
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  overflow-y: auto;
+}
+
+.logo img {
+  width: 150px;
+  height: 130px;
+  margin: 0 auto;
+  display: block;
 }
 
 .tabBar ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    width: 100%;
-}
-
-.nav-link {
-    text-decoration: none;
-    color: #ecf0f1; /* Light text color */
-    display: block;
-    padding: 10px 20px; /* Add padding to the links */
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
 }
 
 .nav-item {
-    width: 100%;
+  font-size: 16px;
+  padding: 10px 15px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+  position: relative;
 }
 
-.nav-item:hover, .nav-item.active {
-    background-color: #34495e; /* Darker background on hover and active state */
+.nav-link {
+  text-decoration: none;
+  color: white; /* Changed to white */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.nav-item:hover,
+.nav-item.active {
+  background-color: #0056b3;
+  color: white; /* Ensure text remains white */
+  transform: translateY(-2px);
+  cursor: pointer;
+}
+
+.nav-item:hover > .nav-link {
+  color: white; /* Changed to white */
+}
+
+.sub-menu {
+  list-style: none;
+  padding: 5px 0 5px 20px; /* Indentation for the submenu */
+  margin: 5px 0 0 0; /* Proper spacing */
+  display: none; /* Hidden by default */
+  flex-direction: column;
+}
+
+.nav-item:hover > .sub-menu,
+.nav-item.open > .sub-menu {
+  display: flex;
+}
+
+.sub-menu li {
+  padding: 8px 15px;
+  border-radius: 3px;
+}
+
+.sub-menu li:hover {
+  background-color: #002d61;
+  transform: translateX(5px);
+  cursor: pointer;
+}
+
+.sub-menu .nav-link {
+  font-size: 14px;
+  color: white; /* Changed to white */
+  text-decoration: none;
+}
+
+.icon {
+  font-size: 20px;
+  color: white; /* Changed to white */
+}
+
+.icon-button__badge {
+  background-color: red;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 12px;
+  margin-left: auto;
+}
+
+.profile {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  z-index: 100;
+}
+
+span {
+  color: red;
+  font-weight: bold;
+  font-size: 17px;
+  margin-top: -20px;
+}
+
+.toggle-btn {
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+  width: 100%;
+  text-align: left;
+}
+
+/* Smooth submenu transition for visual effect */
+.sub-menu {
+  transition: all 0.3s ease-in-out;
 }

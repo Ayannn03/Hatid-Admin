@@ -1,7 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import TabBar from '../tab-bar/tabBar';
 import axios from 'axios';
-import moment from 'moment';
 import {
   TableContainer,
   Table,
@@ -15,11 +13,13 @@ import {
   DialogContent,
   CircularProgress,
 } from '@mui/material';
+import moment from 'moment';
 import './subscription.css';
+import TabBar from '../tab-bar/tabBar';
 
 const API_URL = 'https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/subs/subscription/';
 
-const ActiveSubscriptions = () => {
+const SubscriptionReq = () => {
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
   const [nameSearch, setNameSearch] = useState('');
@@ -27,11 +27,11 @@ const ActiveSubscriptions = () => {
   const [selectedSubscription, setSelectedSubscription] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [vehicleTypeFilter, setVehicleTypeFilter] = useState('');
   const [subscriptionTypeFilter, setSubscriptionTypeFilter] = useState('');
   const [previewImage, setPreviewImage] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Fetch data from the API
   useEffect(() => {
     fetchData();
   }, []);
@@ -46,7 +46,6 @@ const ActiveSubscriptions = () => {
       }));
       const sortedData = dataWithId.sort((a, b) => moment(b.startDate).diff(moment(a.startDate)));
       setData(sortedData);
-      setError(null);
     } catch (error) {
       console.error('Error fetching data:', error);
       setError('Error fetching data');
@@ -55,10 +54,78 @@ const ActiveSubscriptions = () => {
     }
   };
 
-  const handleSearch = (e) => {
-    setNameSearch(e.target.value);
+  // Handle accepting a payment for a subscription
+  const handleAcceptPayment = async (subscriptionId) => {
+    try {
+      if (!subscriptionId) throw new Error('SubscriptionId is required');
+
+      const response = await axios.post(
+        'https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/subs/payment-accept',
+        { subscriptionId }
+      );
+
+      if (response.status === 200) {
+        console.log('Subscription updated:', response.data);
+        fetchData();
+      } else {
+        console.error('Failed to update subscription:', response.data.message);
+      }
+    } catch (error) {
+      console.error('Error handling payment acceptance:', error);
+    }
   };
 
+  // Handle rejecting (deleting) a subscription
+  const handleRejectSubscription = async (subscriptionId) => {
+    try {
+      if (!subscriptionId) throw new Error('SubscriptionId is required');
+
+      const response = await axios.delete(
+        `https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/subs/subscription-reject/${subscriptionId}`
+      );
+
+      if (response.status === 200) {
+        console.log('Subscription rejected:', response.data);
+        fetchData();
+      } else {
+        console.error('Failed to reject subscription:', response.data.message);
+      }
+    } catch (error) {
+      console.error('Error rejecting subscription:', error);
+    }
+  };
+
+  // Filter data
+  const filteredData = useMemo(() => {
+    return data.filter((item) => {
+      const driverName = item.driver?.name?.toLowerCase() || '';
+      const vehicleType = item.vehicleType?.toLowerCase() || '';
+      const isPending = item.status?.toLowerCase() === 'pending';
+      const subscriptionTypeMatch =
+        subscriptionTypeFilter === '' || item.subscriptionType === subscriptionTypeFilter;
+  
+      return (
+        driverName.includes(nameSearch.toLowerCase()) &&
+        (vehicleType === 'jeep' || vehicleType === 'tricycle') &&
+        isPending &&
+        subscriptionTypeMatch
+      );
+    });
+  }, [data, nameSearch, subscriptionTypeFilter]);
+  
+
+  // Paginate filtered data
+  const paginatedData = useMemo(() => {
+    return filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  }, [filteredData, page, rowsPerPage]);
+
+  const handleChangePage = (event, newPage) => setPage(newPage);
+  const handleRowsPerPageChange = (event) => {
+    setRowsPerPage(+event.target.value);
+    setPage(0);
+  };
+
+  // View subscription receipt in a modal
   const handleViewReceipt = (sub) => {
     setSelectedSubscription(sub);
     setShowModal(true);
@@ -71,65 +138,25 @@ const ActiveSubscriptions = () => {
     setPreviewImage(null);
   };
 
-  const handlePreviewImage = (image) => {
-    setPreviewImage(image);
-  };
-
-  const handleVehicleTypeChange = (e) => {
-    setVehicleTypeFilter(e.target.value);
-  };
-
-  const handleSubscriptionTypeChange = (e) => {
-    setSubscriptionTypeFilter(e.target.value);
-  };
-
-  const filteredData = useMemo(() => {
-    return data.filter((item) => {
-      const driverName = item.driver?.name?.toLowerCase() || '';
-      const vehicleType = item.vehicleType?.toLowerCase() || '';
-      const isExpired = moment().isAfter(moment(item.endDate));
-
-      return (
-        driverName.includes(nameSearch.toLowerCase()) &&
-        (vehicleTypeFilter === '' || vehicleType === vehicleTypeFilter.toLowerCase()) &&
-        (subscriptionTypeFilter === '' || item.subscriptionType === subscriptionTypeFilter) &&
-        !isExpired
-      );
-    });
-  }, [data, nameSearch, vehicleTypeFilter, subscriptionTypeFilter]);
-
-  const paginatedData = useMemo(() => {
-    return filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-  }, [filteredData, page, rowsPerPage]);
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleRowsPerPageChange = (event) => {
-    setRowsPerPage(+event.target.value);
-    setPage(0);
-  };
+  const handlePreviewImage = (image) => setPreviewImage(image);
+  const handleSubscriptionTypeChange = (e) => setSubscriptionTypeFilter(e.target.value);
+  const handleSearch = (e) => setNameSearch(e.target.value);
 
   return (
     <div className="subs-main-content">
+      {/* Modal for viewing receipts */}
       <Dialog open={showModal} onClose={handleCloseModal} maxWidth="sm" fullWidth>
         <DialogTitle>Subscription Receipt</DialogTitle>
         <DialogContent>
           {selectedSubscription ? (
             <div>
               {selectedSubscription.receipt ? (
-                <div>
-                  <p>
-                    <strong>Receipt:</strong>
-                  </p>
-                  <img
-                    src={selectedSubscription.receipt}
-                    alt="Receipt"
-                    style={{ width: '100%', maxHeight: '300px', objectFit: 'contain', cursor: 'pointer' }}
-                    onClick={() => handlePreviewImage(selectedSubscription.receipt)}
-                  />
-                </div>
+                <img
+                  src={selectedSubscription.receipt}
+                  alt="Receipt"
+                  style={{ width: '100%', maxHeight: '300px', objectFit: 'contain', cursor: 'pointer' }}
+                  onClick={() => handlePreviewImage(selectedSubscription.receipt)}
+                />
               ) : (
                 <p>No receipt available for this subscription.</p>
               )}
@@ -140,24 +167,21 @@ const ActiveSubscriptions = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Image preview modal */}
       {previewImage && (
         <Dialog open={!!previewImage} onClose={() => setPreviewImage(null)} maxWidth="sm" fullWidth>
+          <DialogTitle>Image Preview</DialogTitle>
           <DialogContent>
             <img
               src={previewImage}
               alt="Preview"
-              style={{
-                width: '100%',
-                maxHeight: '500px',
-                objectFit: 'contain',
-                marginBottom: '20px',
-                cursor: 'zoom-out',
-              }}
+              style={{ width: '100%', maxHeight: '500px', objectFit: 'contain' }}
             />
           </DialogContent>
         </Dialog>
       )}
 
+      {/* Loading state */}
       {loading ? (
         <div className="loading-container">
           <CircularProgress sx={{ display: 'block', margin: 'auto', marginTop: 4 }} />
@@ -175,15 +199,10 @@ const ActiveSubscriptions = () => {
             }}
           >
             <div className="subscription-top-bar">
-              <h1 className="subcription-list">Active Subscriptions</h1>
+              <h1 className="subcription-list">Subscriptions Applications</h1>
               <div className="sort-container-subs">
-                <select onChange={handleVehicleTypeChange} value={vehicleTypeFilter}>
-                  <option value="">All Vehicle Type</option>
-                  <option value="Tricycle">Tricycle</option>
-                  <option value="Jeep">Jeep</option>
-                </select>
                 <select onChange={handleSubscriptionTypeChange} value={subscriptionTypeFilter}>
-                  <option value="">All Subscription Type</option>
+                  <option value="">Filter By Subscription Type</option>
                   <option value="Monthly">Monthly</option>
                   <option value="Quarterly">Quarterly</option>
                   <option value="Annually">Annually</option>
@@ -199,7 +218,6 @@ const ActiveSubscriptions = () => {
                 />
               </div>
             </div>
-
             <Table sx={{ '& .MuiTableCell-root': { padding: '10px' } }}>
               <TableHead>
                 <TableRow>
@@ -207,34 +225,39 @@ const ActiveSubscriptions = () => {
                   <TableCell>Driver</TableCell>
                   <TableCell>Subscription Type</TableCell>
                   <TableCell>Vehicle Type</TableCell>
-                  <TableCell>Start</TableCell>
-                  <TableCell>End</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell>Receipt</TableCell>
+                  <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {paginatedData.length > 0 ? (
                   paginatedData.map((item, index) => (
-                    <TableRow key={item.id}>
-                      <TableCell>{page * rowsPerPage + index + 1}</TableCell>
-                      <TableCell>{item.driver?.name}</TableCell>
-                      <TableCell>{item.subscriptionType}</TableCell>
-                      <TableCell>{item.vehicleType}</TableCell>
-                      <TableCell>{moment(item.startDate).format('MMMM DD, YYYY')}</TableCell>
-                      <TableCell>{moment(item.endDate).format('MMMM DD, YYYY')}</TableCell>
-                      <TableCell>{item.status}</TableCell>
+                    <TableRow key={item.id || item._id}>
+                      <TableCell>{page * rowsPerPage +1 +index}</TableCell>
+                      <TableCell>{item.driver?.name || 'N/A'}</TableCell>
+                      <TableCell>{item.subscriptionType || 'N/A'}</TableCell>
+                      <TableCell>{item.vehicleType || 'N/A'}</TableCell>
+                      <TableCell>{item.status || 'N/A'}</TableCell>
                       <TableCell>
                         <button className="view-button" onClick={() => handleViewReceipt(item)}>
                           View Receipt
+                        </button>
+                      </TableCell>
+                      <TableCell>
+                        <button className="view-button" onClick={() => handleAcceptPayment(item._id)}>
+                          Accept
+                        </button>
+                        <button className="delete-button" onClick={() => handleRejectSubscription(item._id)}>
+                          Reject
                         </button>
                       </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={8} align="center">
-                      No Active Subscriptions Found.
+                    <TableCell colSpan={7} align="center">
+                      No data available
                     </TableCell>
                   </TableRow>
                 )}
@@ -242,6 +265,7 @@ const ActiveSubscriptions = () => {
             </Table>
           </TableContainer>
 
+          {/* Pagination */}
           <TablePagination
             rowsPerPageOptions={[10, 20, 30]}
             component="div"
@@ -251,8 +275,6 @@ const ActiveSubscriptions = () => {
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleRowsPerPageChange}
           />
-
-          {error && <div className="error-message">{error}</div>}
         </div>
       )}
       <TabBar />
@@ -260,4 +282,4 @@ const ActiveSubscriptions = () => {
   );
 };
 
-export default ActiveSubscriptions;
+export default SubscriptionReq;

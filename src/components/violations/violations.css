@@ -1,0 +1,194 @@
+/* Top bar */
+.violation-top-bar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 40px;
+  background-color: #fff;  
+}
+.violation-main-content{
+  margin-left: 30px;
+}
+
+
+/* Table */
+thead {
+  background-color: #f9f9f9; 
+  border-bottom: 2px solid #e0e0e0; 
+  border-top: 2px solid #e0e0e0;  
+  border-radius: 8px;
+}
+
+
+table tr {
+  white-space: nowrap;
+  color: #71717a;
+}
+
+
+table tr {
+  white-space: nowrap;
+  color:#71717a;
+}
+
+
+.MuiTableRow-root:nth-of-type(odd) {
+  background-color: #f9f9f9; /* Alternating row colors */
+}
+
+.MuiTableRow-root:nth-of-type(even) {
+  background-color: #ffffff;
+}
+
+
+
+/* Modal buttons */
+.modal-button {
+  display: flex;
+  justify-content: flex-end;
+  margin: 20px 10px -50px;
+}
+
+.modal-button button, .modal-button-2 button {
+  width: 120px;
+  height: 40px;
+  border-radius: 5px;
+  border: none;
+  background-color: #3b3131;
+  color: white;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.modal-button-2 button {
+  background-color: #ffecc6;
+  color: black;
+}
+
+.modal-button button:hover, .modal-button-2 button:hover {
+  background-color: #333;
+}
+
+
+
+
+/* Violation image */
+.violation-image img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 2px solid #ddd;
+}
+
+.violation-image {
+  width: 20%;
+}
+
+/* Violation details */
+.violation-details p {
+  padding: 25px;
+  display: flex;
+  flex-direction: row;
+  
+}
+
+/* Close button */
+.close-button {
+  margin-top: 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.close-button:hover {
+  background-color: #0056b3;
+}
+
+
+/* Close icon in modal */
+.violation-close {
+  position: absolute;
+  top: 25px;
+  right: 15px;
+  cursor: pointer;
+  font-size: 24px;
+  color: #333;
+}
+
+.view-button, .close-button {
+  font-size: 14px;
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: 1px solid lightgray;
+  background-color: whitesmoke;
+  color: black;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+
+
+.view-button:hover, .close-button:hover {
+  background-color: #0056b3;
+}
+
+/* Modal Styling */
+.violation-modal {
+  border-radius: 12px;
+  background: #64b5f6;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  width: 60%; /* Adjusted width */
+  height: 75%; 
+  padding: 20px; /* Added padding */
+  z-index: 9999;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Enhanced shadow */
+}
+
+/* Modal Header */
+.violation-modal .report h2 {
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 5px;
+}
+
+/* Violation section */
+.violation {
+  padding: 15px;
+  background-color: white;
+}
+
+/* Report section */
+.report {
+  display: flex;
+  flex-direction: column;
+  margin-left: 115px;
+  margin-top: -80px;
+  margin-bottom: 40px;
+}
+
+.report p{
+  color: white;
+}
+
+
+/* Profile Image */
+.violation-image img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 3px solid #1e90ff;
+
+}
+
+
+
