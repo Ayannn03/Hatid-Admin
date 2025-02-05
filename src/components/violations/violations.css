@@ -32,9 +32,6 @@ table tr {
   color:#71717a;
 }
 
-tbody tr {
-  background-color: white;
-}
 
 .MuiTableRow-root:nth-of-type(odd) {
   background-color: #f9f9f9; /* Alternating row colors */
@@ -133,16 +130,7 @@ tbody tr {
   transition: all 0.3s ease;
 }
 
-.delete-button{
-  font-size: 14px;
-  padding: 8px 16px;
-  border-radius: 4px;
-  border: 1px solid lightgray;
-  background-color: #FF4D4D;
-  color: black;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
+
 
 .view-button:hover, .close-button:hover {
   background-color: #0056b3;

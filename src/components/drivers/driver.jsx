@@ -21,7 +21,6 @@ const Driver = () => {
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
   const [nameSearch, setNameSearch] = useState("");
-  const [vehicleSearch, setVehicleSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [profileData, setProfileData] = useState(null);
@@ -39,7 +38,7 @@ const Driver = () => {
 
 
   const sortOptions = ["Name",  "Address"];
-  const categoryOptions =["Personal Info", "Vehicle Info" , "Ratings", "Violation", "License Images", "Vehicle Images"]
+  const categoryOptions =["Personal Info", "Vehicle Info" , "Ratings", "Violation", "License/Registration Images", "Vehicle Images"]
 
   
 
@@ -51,20 +50,19 @@ const Driver = () => {
       const driverResponse = await axios.get(DRIVER_API_URL);
       const driverData = driverResponse.data;
 
-      // Add additional info and sort by newest (descending order)
+     
       const sortedData = driverData
         .map((driver, index) => ({
           ...driver,
           id: index + 1,
           vehicleInfo: driver.vehicleInfo2,
         }))
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Sort by `createdAt`
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); 
 
       setData(sortedData);
-      setFilteredData(sortedData); // Initialize filtered data
+      setFilteredData(sortedData); 
       setError(null);
     } catch (error) {
-      console.error("Error fetching data:", error);
       setError("Error fetching data");
     } finally {
       setLoading(false);
@@ -105,24 +103,22 @@ const Driver = () => {
 
   const fetchAllRatings = useCallback(async (driverId) => {
     try {
-      // Start by fetching ratings for the driver
+     
       const res = await axios.get(`${RATING_API_URL}${driverId}`);
       
       if (res.data.status === "ok") {
-        // If ratings exist, prepare the list of user IDs for batch fetching
+       
         const ratings = res.data.data.ratings;
   
-        // Create a list of unique user IDs from the ratings
         const userIds = Array.from(
-          new Set(ratings.map((rating) => rating.user).filter((id) => id)) // filter out any null IDs
+          new Set(ratings.map((rating) => rating.user).filter((id) => id)) 
         );
   
-        // Batch fetch passenger details for all user IDs
+        
         const passengerDetails = await Promise.all(
           userIds.map((userId) => fetchPassengerDetails(userId))
         );
-  
-        // Map user details back to the ratings
+
         const ratingsWithPassengerDetails = ratings.map((rating) => ({
           ...rating,
           passengerName: passengerDetails.find(
@@ -150,7 +146,7 @@ const Driver = () => {
     }
   }, []);
   
-  // Refactor the fetchPassengerDetails to support batch fetching
+ 
   const fetchPassengerDetails = async (userId) => {
     try {
       const res = await axios.get(`https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/users/${userId}`);
@@ -181,19 +177,19 @@ const Driver = () => {
     setProfileData(itemToView);
     setShowModal(true);
     
-    // Fetch all necessary data including ratings
+    
     await fetchAverageRating(itemToView._id);
-    await fetchAllRatings(itemToView._id); // Fetch ratings data here
+    await fetchAllRatings(itemToView._id); 
     await fetchViolations(itemToView._id);
     await fetchSubscriptionType(itemToView._id);
   };
   
   const handleImagePreview = (imageUrl) => {
-    setPreviewImage(imageUrl); // Set the clicked image URL to state
+    setPreviewImage(imageUrl); 
   };
 
   const handleClosePreview = () => {
-    setPreviewImage(null); // Close the preview
+    setPreviewImage(null); 
   };
 
   const handleSort = (e) => {
@@ -273,7 +269,7 @@ const Driver = () => {
                       onClick={() => handleImagePreview(profileData.profilePic )}
                     />
                     <div className="profile-info">
-                      <p><strong>Ratings:</strong> {rating}</p>
+                      <p><strong>Ratings:</strong> <FaStar style={{color:"yellow"}}/> {rating}</p>
                       <p><strong>{profileData.name}</strong></p>
                       <p><strong>Last Login:</strong> {profileData.lastLogin || "N/A"}</p>
                       <p>Violation: {violations.length || "0"}</p>
@@ -380,35 +376,62 @@ const Driver = () => {
                   </TableContainer>
                     </div>
                   )}
-               {categoryValue === "License Images" && (
-                  <div className="imageInfo">
-                    <div className="images-container">
-                      <div className="image-wrapper">
-                       <h3>License Front: </h3> 
-                        {profileData.driverInfo?.licenseFront ? (
-                          <img src={profileData.driverInfo.licenseFront} alt="License Front" 
-                          onClick={() => handleImagePreview(profileData.driverInfo.licenseFront)}/>
-                        ) : (
-                          <h4>No image available</h4>
-                        )}
+              {categoryValue === "License/Registration Images" && (
+                      <div className="imageInfo">
+                        <div className="images-container">
+                          <div className="image-wrapper">
+                            <h4>License <br />Front: </h4>
+                            {profileData.license?.licenseFront ? (
+                              <img
+                                src={profileData.license.licenseFront}
+                                alt="License Front"
+                                onClick={() => handleImagePreview(profileData.license.licenseFront)}
+                              />
+                            ) : (
+                              <h4>No image available</h4>
+                            )}
+                          </div>
+                          <div className="image-wrapper">
+                            <h4>License <br />Back:</h4>
+                            {profileData.license?.licenseBack ? (
+                              <img
+                                src={profileData.license.licenseBack}
+                                alt="License Back"
+                                onClick={() => handleImagePreview(profileData.license.licenseBack)}
+                              />
+                            ) : (
+                              <h4>No image available</h4>
+                            )}
+                          </div>
+                          <div className="image-wrapper">
+                            <h4>Official <br />Receipt:</h4>
+                            {profileData.license?.or ? (
+                              <img
+                                src={profileData.license.or}
+                                alt="Official Receipt"
+                                onClick={() => handleImagePreview(profileData.license.or)}
+                              />
+                            ) : (
+                              <h4>No image available</h4>
+                            )}
+                          </div>
+                          <div className="image-wrapper">
+                            <h4>Certificate of Registration:</h4>
+                            {profileData.license?.cr ? (
+                              <img
+                                src={profileData.license.cr}
+                                alt="Certificate of Registration"
+                                onClick={() => handleImagePreview(profileData.license.cr)}
+                              />
+                            ) : (
+                              <h4>No image available</h4>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <div className="image-wrapper">
-                        <h3>License Back:</h3>
-                        {profileData.driverInfo?.licenseBack ? (
-                          <img src={profileData.driverInfo.licenseBack} alt="License Back" 
-                          onClick={() => handleImagePreview(profileData.driverInfo.licenseBack)} />
-                        ) : (
-                          <h4>No image available</h4>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
+                    )}
                 {previewImage && (
                   <div className="preview-modal">
-
-                 
                         <div className="image-preview-modal" >
                     <span className="close-preview-btn"   onClick={handleClosePreview}>&times;</span>
                           <div className="image-preview-container">
@@ -421,7 +444,7 @@ const Driver = () => {
                   <div className="imageInfo">
                     <div className="images-container">
                       <div className="image-wrapper ">
-                        <h3>Vehicle Front:</h3>
+                        <h4>Vehicle <br />Front:</h4>
                         {profileData.vehicleInfo1?.vehicleFront ? (
                           <img src={profileData.vehicleInfo1.vehicleFront} 
                           alt="Vehicle Front" 
@@ -431,7 +454,7 @@ const Driver = () => {
                         )}
                       </div>
                       <div className="image-wrapper">
-                        <h3>Vehicle Back:</h3>
+                        <h4>Vehicle <br /> Back:</h4>
                         {profileData.vehicleInfo1?.vehicleBack ? (
                           <img src={profileData.vehicleInfo1.vehicleBack} alt="Vehicle Back"   
                           onClick={() => handleImagePreview(profileData.vehicleInfo1.vehicleBack)}
@@ -441,7 +464,7 @@ const Driver = () => {
                         )}
                       </div>
                       <div className="image-wrapper">
-                        <h3>Vehicle Right:</h3>
+                        <h4>Vehicle <br />Right:</h4>
                         {profileData.vehicleInfo1?.vehicleRight ? (
                           <img src={profileData.vehicleInfo1.vehicleRight} alt="Vehicle Right" 
                           onClick={() => handleImagePreview(profileData.vehicleInfo1.vehicleRight)}/>
@@ -450,7 +473,7 @@ const Driver = () => {
                         )}
                       </div>
                       <div className="image-wrapper">
-                        <h3>Vehicle Left:</h3>
+                        <h4>Vehicle <br />Left:</h4>
                         {profileData.vehicleInfo1?.vehicleLeft ? (
                           <img src={profileData.vehicleInfo1.vehicleLeft} alt="Vehicle Left" 
                           onClick={() => handleImagePreview(profileData.vehicleInfo1.vehicleLeft)} />
@@ -516,12 +539,12 @@ const Driver = () => {
         <IoSearch className="search-icon" />
       </div>
     </div>
-        <Table sx={{ '& .MuiTableCell-root': { padding: '14px', textAlign:"center"} }}>
+        <Table sx={{ '& .MuiTableCell-root': { padding: '13px', textAlign:"center"} }}>
           
           <TableHead >
             
             <TableRow >
-              <TableCell>ID</TableCell>
+              <TableCell>Number</TableCell>
               <TableCell>Name</TableCell>
               <TableCell>Phone</TableCell>
               <TableCell>Address</TableCell>
@@ -530,9 +553,9 @@ const Driver = () => {
             </TableRow>
           </TableHead>
           <TableBody >
-            {paginatedData.map((item) => (
+            {paginatedData.map((item, index) => (
               <TableRow key={item._id} >
-                <TableCell >{item.id}</TableCell>
+               <TableCell>{page * rowsPerPage + index + 1}</TableCell>
                 <TableCell>{item.name || "N/A"}</TableCell>
                 <TableCell>{item.number || "N/A"}</TableCell>
                 <TableCell>{item.address || "N/A"}</TableCell>

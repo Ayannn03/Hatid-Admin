@@ -29,6 +29,7 @@ const ExpiredJeepAndTricycleSubscriptions = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [previewImage, setPreviewImage] = useState(null);
+  const [vehicleTypeFilter, setVehicleTypeFilter] = useState('');
   const [loading, setLoading] = useState(true);
   
 
@@ -78,7 +79,9 @@ const ExpiredJeepAndTricycleSubscriptions = () => {
   const handlePreviewImage = (image) => {
     setPreviewImage(image); // Set the image to be previewed
   };
-
+  const handleVehicleTypeChange = (e) => {
+    setVehicleTypeFilter(e.target.value);
+  };
  
 
 
@@ -91,12 +94,13 @@ const ExpiredJeepAndTricycleSubscriptions = () => {
 
       return (
         driverName.includes(nameSearch.toLowerCase()) &&
-        (vehicleType === 'jeep' || vehicleType === 'tricycle') &&
+        (vehicleTypeFilter === '' || vehicleType === vehicleTypeFilter.toLowerCase()) &&
         (subscriptionTypeFilter === '' || item.subscriptionType === subscriptionTypeFilter) &&
         isExpired
       );
     });
-  }, [data, nameSearch, subscriptionTypeFilter]);
+  }, [data, nameSearch, vehicleTypeFilter, subscriptionTypeFilter]);
+
 
   const paginatedData = useMemo(() => {
     return filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
@@ -178,6 +182,11 @@ const ExpiredJeepAndTricycleSubscriptions = () => {
           <div className="subscription-top-bar">
             <h1 className="subcription-list">Expired Subscriptions</h1>
             <div className="sort-container-subs">
+            <select onChange={handleVehicleTypeChange} value={vehicleTypeFilter}>
+                  <option value="">All Vehicle Type</option>
+                  <option value="Tricycle">Tricycle</option>
+                  <option value="Jeep">Jeep</option>
+                </select>
               <select
                 onChange={handleSubscriptionTypeChange}
                 value={subscriptionTypeFilter}
@@ -202,7 +211,7 @@ const ExpiredJeepAndTricycleSubscriptions = () => {
           <Table sx={{ '& .MuiTableCell-root': { padding: '10px' } }}>
             <TableHead>
               <TableRow>
-                <TableCell>ID</TableCell>
+                <TableCell>Number</TableCell>
                 <TableCell>Driver</TableCell>
                 <TableCell>Subscription Type</TableCell>
                 <TableCell>Vehicle Type</TableCell>
@@ -214,9 +223,9 @@ const ExpiredJeepAndTricycleSubscriptions = () => {
             </TableHead>
             <TableBody>
               {paginatedData.length > 0 ? (
-                paginatedData.map((item) => (
+                paginatedData.map((item, index) => (
                   <TableRow key={item._id}>
-                    <TableCell>{item.id}</TableCell>
+                       <TableCell>{page * rowsPerPage + index + 1}</TableCell>
                     <TableCell>{item.driver?.name}</TableCell>
                     <TableCell>{item.subscriptionType}</TableCell>
                     <TableCell>{item.vehicleType}</TableCell>

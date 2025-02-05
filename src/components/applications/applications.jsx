@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState , useMemo} from "react";
 import axios from "axios";
 import TabBar from "../tab-bar/tabBar";
 import {
@@ -15,7 +15,14 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  CircularProgress
+  CircularProgress,
+  TablePagination,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  Checkbox,
+  ListItemText,
 } from "@mui/material";
 import { IoSearch } from "react-icons/io5";
 
@@ -30,9 +37,21 @@ export default function Applications() {
   const [selectedApplicationId, setSelectedApplicationId] = useState(null); // Store application ID for confirmation
   const [selectedImages, setSelectedImages] = useState([]); // Store selected images for modal
   const [confirmModalOpen, setConfirmModalOpen] = useState(false); // Modal for confirming approval
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState(null); // For previewing the clicked image
   const [imagePreviewModalOpen, setImagePreviewModalOpen] = useState(false); // State for new preview modal
+  const [page, setPage] = useState(0); 
+  const [rowsPerPage, setRowsPerPage] = useState(10); 
   const [loading, setLoading] = useState(true)
+  const [rejectionReasons, setRejectionReasons] = useState(""); 
+  const REJECTION_REASONS = [
+    "Invalid License",
+    "Document Expiry",
+    "Failure to Provide Required Information",
+    "Ineligibility Due to Location",
+  ];
+  
+  const [selectedReasons, setSelectedReasons] = useState([]);
 
   useEffect(() => {
     fetchData();
@@ -56,6 +75,10 @@ export default function Applications() {
       setLoading(false);
     }
   };
+
+  const handleReasonChange = (event) => {
+    setSelectedReasons(event.target.value);
+  };
   
 
   const handleSearch = (e) => {
@@ -65,22 +88,54 @@ export default function Applications() {
   const filteredApplications = applications.filter((application) =>
     (application.name || "").toLowerCase().includes(nameSearch.toLowerCase())
   );
-
+  
+  const handleApplicationRejection = async () => {
+    if (selectedReasons.length === 0) {
+      alert("Please select at least one rejection reason.");
+      return;
+    }
+  
+    try {
+      
+      await axios.delete(
+        `https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/driver/reject/${selectedApplicationId}`,
+        { data: { rejectionReasons: selectedReasons } }
+      );
+  
+     
+      setApplications((prevApplications) =>
+        prevApplications.filter(
+          (application) => application.id !== selectedApplicationId
+        )
+      );
+  
+      console.log("Driver rejected successfully");
+    } catch (error) {
+      console.error("Error rejecting application:", error);
+      alert("Failed to reject application. Please try again.");
+    } finally {
+  
+      closeRejectModal();
+      setSelectedReasons([]);
+    }
+  };
+  
+  
+  
   const handleApplicationApproval = async () => {
     try {
       if (!selectedApplicationId) {
-        throw new Error("ApplicationId is required");
+        throw new Error("Application ID is required");
       }
-
+  
       const response = await axios.post(
         `https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/driver/approve-driver/${selectedApplicationId}`
       );
-
+  
       if (response.status === 200) {
         console.log("Driver approved:", response.data);
-        fetchData(); // Refresh applications after approval
-        closeModal(); // Close the modal
-        setConfirmModalOpen(false); // Close the confirmation modal
+        fetchData(); 
+        closeConfirmModal();
       } else {
         console.error("Failed to approve driver:", response.data.message);
       }
@@ -89,40 +144,18 @@ export default function Applications() {
     }
   };
 
-  const handleApplicationRejection = async (applicationId) => {
-    try {
-      if (!applicationId) {
-        throw new Error("Application ID is required");
-      }
-  
-      const response = await axios.delete(
-        `https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/driver/reject/${applicationId}`
-      );
-  
-      if (response.status === 200) {
-        console.log("Driver rejected:", response.data);
-        fetchData(); // Refresh applications after rejection
-      } else {
-        console.error("Failed to reject driver:", response.data.message);
-      }
-    } catch (error) {
-      console.error("Error handling driver rejection:", error);
-    }
-  };
-  
-
   const openModal = (applicationId, images) => {
     setSelectedApplicationId(applicationId);
     setSelectedImages(images);
     setModalOpen(true);
-    setPreviewImage(null); // Reset preview image when opening the modal
+    setPreviewImage(null); 
   };
 
   const closeModal = () => {
     setModalOpen(false);
     setSelectedApplicationId(null);
-    setSelectedImages([]); // Clear selected images
-    setPreviewImage(null); // Reset preview image
+    setSelectedImages([]); 
+    setPreviewImage(null); 
   };
 
   const openConfirmModal = (applicationId) => {
@@ -135,19 +168,44 @@ export default function Applications() {
     setSelectedApplicationId(null);
   };
 
+  const openRejectModal = (applicationId) => {
+    setSelectedApplicationId(applicationId);
+    setRejectModalOpen(true);
+  };
+  
+
+  const closeRejectModal = () => {
+    setRejectModalOpen(false);
+    setSelectedApplicationId(null);
+  };
+
   const openImagePreviewModal = (image) => {
     setPreviewImage(image);
-    setImagePreviewModalOpen(true); // Open the new preview modal
+    setImagePreviewModalOpen(true); 
   };
 
   const closeImagePreviewModal = () => {
     setImagePreviewModalOpen(false);
-    setPreviewImage(null); // Reset preview image when closing modal
+    setPreviewImage(null); 
   };
+
+
+    const paginatedData = useMemo(() => {
+      return filteredApplications.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    }, [filteredApplications, page, rowsPerPage]);
+  
+    const handleChangePage = (event, newPage) => {
+      setPage(newPage);
+    };
+  
+    const handleRowsPerPageChange = (event) => {
+      setRowsPerPage(+event.target.value);
+      setPage(0);
+    };
 
   return (
     <div>
-      {/* View Images Modal */}
+
       <Dialog open={modalOpen} onClose={closeModal} maxWidth="md" fullWidth>
         <DialogTitle>View Images</DialogTitle>
         <DialogContent>
@@ -166,9 +224,9 @@ export default function Applications() {
                     border: "1px solid #ddd",
                     borderRadius: "8px",
                     padding: "8px",
-                    cursor: "pointer", // Change cursor to pointer to indicate it's clickable
+                    cursor: "pointer", 
                   }}
-                  onClick={() => openImagePreviewModal(image)} // Open image preview modal
+                  onClick={() => openImagePreviewModal(image)} 
                 />
               ))
             ) : (
@@ -183,7 +241,7 @@ export default function Applications() {
         </DialogActions>
       </Dialog>
 
-      {/* Confirm Application Approval Modal */}
+     
       <Dialog open={confirmModalOpen} onClose={closeConfirmModal}>
         <DialogTitle>Are you sure?</DialogTitle>
         <DialogContent>
@@ -199,7 +257,7 @@ export default function Applications() {
         </DialogActions>
       </Dialog>
 
-      {/* Image Preview Modal */}
+    
       <Dialog open={imagePreviewModalOpen} onClose={closeImagePreviewModal}>
         <DialogTitle>Image Preview</DialogTitle>
         <DialogContent>
@@ -227,6 +285,43 @@ export default function Applications() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Dialog
+  open={rejectModalOpen}
+  onClose={closeRejectModal}
+  sx={{ "& .MuiPaper-root": { width: "600px", maxWidth: "90%" } }}
+>
+  <DialogTitle>Reject Application</DialogTitle>
+  <DialogContent>
+    <FormControl fullWidth>
+      <InputLabel id="rejection-reason-label">Rejection Reasons</InputLabel>
+      <Select
+        labelId="rejection-reason-label"
+        id="rejection-reason-select"
+        multiple
+        value={selectedReasons}
+        onChange={handleReasonChange}
+        renderValue={(selected) => selected.join(", ")}
+      >
+        {REJECTION_REASONS.map((reason) => (
+          <MenuItem key={reason} value={reason}>
+            <Checkbox checked={selectedReasons.includes(reason)} />
+            <ListItemText primary={reason} />
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={closeRejectModal} color="secondary">
+      Cancel
+    </Button>
+    <Button onClick={handleApplicationRejection} color="primary">
+      Confirm
+    </Button>
+  </DialogActions>
+</Dialog>
+
 
       {loading ? (
        <CircularProgress sx={{ display: "block", margin: "auto", marginTop: 4 }} />
@@ -276,10 +371,11 @@ export default function Applications() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredApplications.length > 0 ? (
-              filteredApplications.map((application) => (
+            {paginatedData.length > 0 ? (
+             paginatedData.map((application, index) => (
+                
                 <TableRow key={application.id}>
-                  <TableCell>{application.id}</TableCell>
+                 <TableCell>{page * rowsPerPage + index + 1}</TableCell>
                   <TableCell>{application.name || "N/A"}</TableCell>
                   <TableCell>{application.email || "N/A"}</TableCell>
                   <TableCell>
@@ -299,6 +395,8 @@ export default function Applications() {
                         openModal(
                           application.id,
                           [
+                            application.license?.or,
+                            application.license?.cr,
                             application.license?.licenseFront,
                             application.license?.licenseBack,
                             application.vehicleInfo1?.vehicleFront,
@@ -321,13 +419,14 @@ export default function Applications() {
 
                     <button
                       className="view-button"
-                      onClick={() => handleApplicationRejection(application.id)}
+                      onClick={() => openRejectModal(application.id)}
                       style={{ marginLeft: "8px", backgroundColor: "#FF5555", color: "#fff" }}
                       disabled={application.accountVerified === "approved"}
                     >
                       Reject
                     </button>
-                                    </TableCell>
+
+                      </TableCell>
                 </TableRow>
               ))
             ) : (
@@ -341,6 +440,16 @@ export default function Applications() {
         </Table>
       </TableContainer>
       )}
+            <TablePagination
+        rowsPerPageOptions={[10, 20, 30]}
+        component="div"
+        count={filteredApplications.length}
+        page={page}
+        rowsPerPage={rowsPerPage}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleRowsPerPageChange}
+        />
+        
       <TabBar />
     </div>
 

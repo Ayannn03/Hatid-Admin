@@ -7,11 +7,11 @@ import { MdEmail, MdPhone, MdLocationOn, MdCalendarToday } from "react-icons/md"
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TablePagination, CircularProgress } from '@mui/material';
 import './commuters.css';
 
-// API URL for fetching commuter data
+
 const API_URL = 'https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/users';
 
 const Commuters = () => {
-  // State Variables
+ 
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
   const [nameSearch, setNameSearch] = useState('');
@@ -21,11 +21,12 @@ const Commuters = () => {
   const [sortValue, setSortValue] = useState("");
   const [page, setPage] = useState(0); 
   const [rowsPerPage, setRowsPerPage] = useState(10); 
+  const [showImagePreview, setShowImagePreview] = useState(false);
 
-  // Sorting options
+
   const sortOptions = ["Name", "Address"];
 
-  // Fetch Data from API
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -36,7 +37,7 @@ const Commuters = () => {
       const response = await axios.get(API_URL);
       const dataWithId = response.data.map((item, index) => ({ ...item, id: index + 1 }));
 
-      // Sort data by `createdAt` field in descending order
+
       const sortedData = dataWithId.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
       setData(sortedData);
@@ -49,17 +50,15 @@ const Commuters = () => {
     }
   };
 
-  // Handle search input
   const handleSearch = (e) => {
     setNameSearch(e.target.value);
   };
 
-  // Filtered Data based on search input
   const filteredData = data.filter((item) =>
     item.name.toLowerCase().includes(nameSearch.toLowerCase())
   );
 
-  // Handle sorting by selected value
+ 
   const handleSort = (e) => {
     const value = e.target.value;
     setSortValue(value);
@@ -76,7 +75,7 @@ const Commuters = () => {
     setData(sortedData);
   };
 
-  // Pagination logic
+
   const paginatedData = useMemo(() => {
     return filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
   }, [filteredData, page, rowsPerPage]);
@@ -89,22 +88,29 @@ const Commuters = () => {
     setRowsPerPage(+event.target.value);
     setPage(0);
   };
-
-  // View profile modal logic
   const handleViewProfile = (id) => {
     const itemToView = data.find((item) => item.id === id);
     setProfileData(itemToView);
     setShowModal(true);
+    setShowImagePreview(false); 
+  };
+
+  const handleImageClick = () => {
+    setShowImagePreview(true);
+  };
+
+  const handleCloseImagePreview = () => {
+    setShowImagePreview(false);
   };
 
   return (
     <div className='commuters-main-content'>
-      {/* Modal overlay */}
+      
       {showModal && profileData && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}></div>
       )}
 
-      {/* Profile Modal */}
+      
       {showModal && profileData && (
         <div className="modal">
           <div className="modal-content">
@@ -113,13 +119,14 @@ const Commuters = () => {
             </button>
             <h2 className="profile-title">User Profile</h2>
             <div className="profile-container">
-              {/* Profile Picture and Details */}
+             
               <div className="commuter-profile-image">
                 <div className='commuter-image'>
                   <img
                     src={profileData.profilePic || "./defaultPic.jpg"}
                     alt="Profile"
                     className="profile-pic"
+                    onClick={handleImageClick}
                   />
                   <p>{profileData.name}</p>
                   <p><strong>Last Login:</strong> {profileData.lastLogin}</p>
@@ -138,8 +145,23 @@ const Commuters = () => {
           </div>
         </div>
       )}
+         {showImagePreview && profileData && (
+        <div className="commuters-preview-modal">
+        <div className="commuters-image-preview-modal" >
+            <button className="close" aria-label="Close" onClick={handleCloseImagePreview}>&times;</button>
+            <div className='commuters-image-preview-container'>
+            <img
+              src={profileData.profilePic || "./defaultPic.jpg"}
+              alt="Profile Preview"
+              className="image-preview"
+            />
+            </div>
+           
+          </div>
+        </div>
+      )}
 
-      {/* Loading Indicator */}
+     
       {loading ? (
         <CircularProgress sx={{ display: "block", margin: "auto", marginTop: 4 }} />
       ) : (
@@ -153,7 +175,7 @@ const Commuters = () => {
               boxShadow: "0 2px 10px rgba(0, 0, 0, 0.5)",
             }}
           >
-            {/* Table Header and Sorting/Search Controls */}
+        
             <div className="commuter-top-bar">
               <h1 className="commuters-list">Commuters List</h1>
               <div className='sort-container'>
@@ -178,11 +200,11 @@ const Commuters = () => {
               </div>
             </div>
 
-            {/* Table Structure */}
+           
             <Table sx={{ '& .MuiTableCell-root': { padding: '10px' } }}>
               <TableHead>
                 <TableRow>
-                  <TableCell>ID</TableCell>
+                  <TableCell>Number</TableCell>
                   <TableCell>Name</TableCell>
                   <TableCell>Email</TableCell>
                   <TableCell>Phone</TableCell>
@@ -191,9 +213,9 @@ const Commuters = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {paginatedData.map((item) => (
+                {paginatedData.map((item, index) => (
                   <TableRow key={item._id}>
-                    <TableCell>{item.id}</TableCell>
+                    <TableCell>{page * rowsPerPage + index + 1}</TableCell>
                     <TableCell>{item.name || "N/A"}</TableCell>
                     <TableCell>{item.email || "N/A"}</TableCell>
                     <TableCell>{item.number || "N/A"}</TableCell>
@@ -207,7 +229,7 @@ const Commuters = () => {
             </Table>
           </TableContainer>
 
-          {/* Pagination Controls */}
+        
           <TablePagination
             rowsPerPageOptions={[10, 20, 30]}
             component="div"
@@ -218,7 +240,7 @@ const Commuters = () => {
             onRowsPerPageChange={handleRowsPerPageChange}
           />
           
-          {/* Error Message */}
+    
           {error && <div className="error-message">{error}</div>}
         </div>
       )}

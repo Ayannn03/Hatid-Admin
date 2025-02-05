@@ -12,18 +12,29 @@ import {
   CircularProgress,
   TablePagination,
   Typography,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
 } from "@mui/material";
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable'; // Importing the autotable plugin for jsPDF
 import './driverReport.css';
 
-// API URLs
-const API_URLS = {
-  week: "https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/ride/bookings/week?year=2024&month=11&week=2",
-  month: "https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/ride/bookings/month?year=2024&month=11",
-  year: "https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/ride/bookings/year?year=2024",
-};
+const currentDate = new Date();
+const currentYear = currentDate.getFullYear();
+const currentMonth = currentDate.getMonth() + 1;
+const currentDay = currentDate.getDate();
+const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+const daysSinceFirstDay = Math.floor((currentDate - firstDayOfMonth) / (1000 * 60 * 60 * 24));
+const currentWeek = Math.ceil((daysSinceFirstDay + 1) / 7);
 
+
+const API_URLS = {
+  week: `https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/ride/bookings/week?year=${currentYear}&month=${currentMonth}&week=${currentWeek}`,
+  month: `https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/ride/bookings/month?year=${currentYear}&month=${currentMonth}`,
+  year: `https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/ride/bookings/year?year=${currentYear}`,
+};
 // Reverse Geocoding function to fetch the address from Mapbox API
 const getAddress = async (latitude, longitude) => {
   const reverseGeocodeUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=pk.eyJ1IjoibWF3aTIxIiwiYSI6ImNseWd6ZGp3aTA1N2IyanM5Ymp4eTdvdzYifQ.0mYPMifHNHONTvY6mBbkvg`;
@@ -57,6 +68,8 @@ const BookingReport = () => {
   const [filter, setFilter] = useState("week"); // Default to 'week'
   const [page, setPage] = useState(0); // Current page for pagination
   const [rowsPerPage, setRowsPerPage] = useState(10); // Number of rows per page
+  const [openPreview, setOpenPreview] = useState(false); // State to control preview modal
+  const [pdfUrl, setPdfUrl] = useState(""); // State to hold the PDF URL for preview
 
   useEffect(() => {
     fetchData();
@@ -65,16 +78,18 @@ const BookingReport = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
+      // Log the current filter and API URL for debugging
+      console.log("Fetching data for filter:", filter);
+      console.log("API URL:", API_URLS[filter]);
+  
       const response = await axios.get(API_URLS[filter]);
-      const bookings = response.data; // Assuming the API returns an array of bookings
-
-      // Merge copassengers into the main booking list
+      const bookings = response.data;
+  
       const allBookings = bookings.flatMap((booking) => {
         const copassengers = booking.copassengers || [];
         return [booking, ...copassengers];
       });
-
-      // Adding address information for each booking
+  
       const bookingsWithAddresses = await Promise.all(
         allBookings.map(async (booking) => {
           const pickupAddress = await getAddress(
@@ -85,7 +100,7 @@ const BookingReport = () => {
             booking.destinationLocation.latitude,
             booking.destinationLocation.longitude
           );
-
+  
           return {
             ...booking,
             pickupAddress,
@@ -93,13 +108,10 @@ const BookingReport = () => {
           };
         })
       );
-
-      // Group bookings by passenger name and location
+  
       const groupedByName = groupBookingsByName(bookingsWithAddresses);
-
-      // Flatten the grouped data for pagination
       const flattenedData = flattenGroupedData(groupedByName);
-
+  
       setData(flattenedData);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -108,8 +120,13 @@ const BookingReport = () => {
       setLoading(false);
     }
   };
+  
+  const handleFilterChange = (event) => {
+    const selectedFilter = event.target.value;
+    setFilter(selectedFilter);
+  };
+  
 
-  // Group bookings by passenger name and location
   const groupBookingsByName = (bookings) => {
     const grouped = {};
 
@@ -118,12 +135,10 @@ const BookingReport = () => {
       const pickupAddress = booking.pickupAddress;
       const destinationAddress = booking.destinationAddress;
 
-      // Initialize a new passenger if not present
       if (!grouped[passengerName]) {
         grouped[passengerName] = {};
       }
 
-      // Create a unique key for each pickup-destination pair
       const locationKey = `${pickupAddress} -> ${destinationAddress}`;
 
       if (!grouped[passengerName][locationKey]) {
@@ -134,14 +149,12 @@ const BookingReport = () => {
         };
       }
 
-      // Increment booking count for the specific location
       grouped[passengerName][locationKey].bookingCount++;
     });
 
     return grouped;
   };
 
-  // Flatten the grouped data for easier pagination
   const flattenGroupedData = (groupedData) => {
     const flattened = [];
 
@@ -161,37 +174,67 @@ const BookingReport = () => {
     return flattened;
   };
 
-  // Pagination Handler
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
 
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0); // Reset page to 0 when changing rows per page
+    setPage(0);
   };
 
-  // PDF Download function
+  const generatePDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text("Booking Report", 14, 20); 
+  
+    const tableData = data.map((row, index) => [
+      row.passengerName,
+      row.pickupAddress || "N/A",
+      row.destinationAddress || "N/A",
+      row.bookingCount || "N/A",
+    ]);
+  
+    doc.autoTable({
+      head: [["Name", "Pick-up Address", "Destination Address", "Booking Count"]],
+      body: tableData,
+      startY: 30,
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [22, 160, 133] },
+      margin: { left: 14, right: 14 },
+    });
+  
+    const pdfDataUrl = doc.output("dataurlstring");
+    setPdfUrl(pdfDataUrl); 
+    setOpenPreview(true); 
+  };
+  
   const handleDownloadPDF = () => {
     const doc = new jsPDF();
-
-    const tableColumn = ["Passenger Name", "Pickup Address", "Destination Address", "Booking Count"];
-    const tableRows = [];
-
-    // Add data to the rows
-    data.forEach((row) => {
-      tableRows.push([row.passengerName, row.pickupAddress, row.destinationAddress, row.bookingCount]);
-    });
-
+    doc.setFontSize(16);
+    doc.text("Booking Report", 14, 20);
+  
+    const tableData = data.map((row, index) => [
+      row.passengerName,
+      row.pickupAddress || "N/A",
+      row.destinationAddress || "N/A",
+      row.bookingCount || "N/A",
+    ]);
+  
     doc.autoTable({
-      head: [tableColumn],
-      body: tableRows,
-      startY: 20,
-      theme: 'striped',
+      head: [["Name", "Pick-up Address", "Destination Address", "Booking Count"]],
+      body: tableData,
+      startY: 30,
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [22, 160, 133] },
+      margin: { left: 14, right: 14 },
     });
-
-    doc.save("Booking_Report.pdf");
+  
+    doc.save("Booking_Report.pdf"); 
   };
+  
+
+
 
   return (
     <div className="booking">
@@ -213,14 +256,14 @@ const BookingReport = () => {
             <div className="report-top-bar">
               <h1>Booking Report</h1>
               <div className="sort-container-subs">
-                <select onChange={(e) => setFilter(e.target.value)}>
+                <select value={filter} onChange={handleFilterChange}>
                   <option value="week">Week</option>
                   <option value="month">Month</option>
                   <option value="year">Year</option>
                 </select>
               </div>
             </div>
-            <Table sx={{ "& .MuiTableCell-root": { padding: "15px" } }}>
+            <Table sx={{ "& .MuiTableCell-root": { padding: "12px" } }}>
               <TableHead>
                 <TableRow>
                   <TableCell><strong>Passenger Name</strong></TableCell>
@@ -254,19 +297,19 @@ const BookingReport = () => {
             </Table>
           </TableContainer>
           <Button
-          variant="contained"
-          color="primary"
-          onClick={handleDownloadPDF}
-          style={{
-            marginTop: '20px',
-            display: 'block',
-            width: '200px',
-          }}
-        >
-          Download as PDF
-        </Button>
+                variant="contained"
+              color="primary"
+              onClick={generatePDF}
+              style={{
+                marginTop: "20px",
+                display: "block",
+                width: "200px",
+              }}
+            >
+              Preview PDF
+            </Button>
           <TablePagination
-            rowsPerPageOptions={[5, 10, 15]}
+            rowsPerPageOptions={[10,20, 30]}
             component="div"
             count={data.length}
             rowsPerPage={rowsPerPage}
@@ -277,7 +320,36 @@ const BookingReport = () => {
         </div>
       )}
 
-      <TabBar/>
+      <TabBar />
+      <Dialog open={openPreview} onClose={() => setOpenPreview(false)} maxWidth="lg" fullWidth>
+        <DialogTitle>PDF Preview</DialogTitle>
+        <DialogContent>
+          <iframe
+            title="PDF Preview"
+            src={pdfUrl}
+            width="100%"
+            height="700px"
+            style={{ border: "none" }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenPreview(false)} color="primary">
+            Close
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleDownloadPDF}
+            style={{
+              marginTop: '20px',
+              display: 'block',
+              width: '200px',
+            }}
+          >
+            Download as PDF
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

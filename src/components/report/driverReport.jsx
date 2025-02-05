@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import TabBar from "../tab-bar/tabBar";
 import {
@@ -11,6 +11,11 @@ import {
   Paper,
   CircularProgress,
   Button,
+  TablePagination,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
@@ -25,6 +30,10 @@ function Report() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [vehicleFilter, setVehicleFilter] = useState(""); // State for vehicle filter
+  const [page, setPage] = useState(0); // Pagination state
+  const [rowsPerPage, setRowsPerPage] = useState(10); // Rows per page state
+  const [openPreview, setOpenPreview] = useState(false); // State to control preview modal
+  const [pdfUrl, setPdfUrl] = useState(""); // State to store the PDF URL for preview
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -73,7 +82,23 @@ function Report() {
     }
   };
 
-  const downloadPDF = () => {
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleRowsPerPageChange = (event) => {
+    setRowsPerPage(+event.target.value);
+    setPage(0);
+  };
+
+  const paginatedData = useMemo(() => {
+    return filteredData.slice(
+      page * rowsPerPage,
+      page * rowsPerPage + rowsPerPage
+    );
+  }, [filteredData, page, rowsPerPage]);
+
+  const generatePDF = () => {
     const doc = new jsPDF();
 
     // Add title to the PDF
@@ -81,8 +106,8 @@ function Report() {
     doc.text("Approved Drivers Report", 14, 20);
 
     // Prepare table data
-    const tableData = filteredData.map((item) => [
-      item.id,
+    const tableData = filteredData.map((item, index) => [
+      page * rowsPerPage + index + 1,
       item.name || "N/A",
       item.number || "N/A",
       item.address || "N/A",
@@ -91,7 +116,39 @@ function Report() {
 
     // Add the table to the PDF
     doc.autoTable({
-      head: [["ID", "Name", "Phone", "Address", "Vehicle Info"]],
+      head: [["Number", "Name", "Phone", "Address", "Vehicle Info"]],
+      body: tableData,
+      startY: 30,
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [22, 160, 133] }, // Teal header color
+      margin: { left: 14, right: 14 },
+    });
+
+    // Generate PDF as a data URL for preview
+    const pdfDataUrl = doc.output("dataurlstring");
+    setPdfUrl(pdfDataUrl); // Set the PDF data URL to preview
+    setOpenPreview(true); // Open preview modal
+  };
+
+  const downloadPDF = () => {
+    const doc = new jsPDF();
+
+    // Add title to the PDF
+    doc.setFontSize(16);
+    doc.text("Approved Drivers Report", 14, 20);
+
+    // Prepare table data
+    const tableData = filteredData.map((item,index) => [
+      page * rowsPerPage + index + 1,
+      item.name || "N/A",
+      item.number || "N/A",
+      item.address || "N/A",
+      item.vehicleInfo?.vehicleType || "N/A",
+    ]);
+
+    // Add the table to the PDF
+    doc.autoTable({
+      head: [["Number", "Name", "Phone", "Address", "Vehicle Info"]],
       body: tableData,
       startY: 30,
       styles: { fontSize: 10 },
@@ -107,9 +164,7 @@ function Report() {
     <div>
       <TabBar />
       {loading ? (
-        <CircularProgress
-          sx={{ display: "block", margin: "auto", marginTop: 4 }}
-        />
+        <CircularProgress sx={{ display: "block", margin: "auto", marginTop: 4 }} />
       ) : error ? (
         <p style={{ textAlign: "center", color: "red" }}>{error}</p>
       ) : (
@@ -117,7 +172,7 @@ function Report() {
           <TableContainer
             component={Paper}
             sx={{
-              marginTop: -2,
+              marginTop: 5,
               maxHeight: 685,
               marginLeft: -2,
               maxWidth: "100%",
@@ -144,7 +199,7 @@ function Report() {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>ID</TableCell>
+                  <TableCell>Number</TableCell>
                   <TableCell>Name</TableCell>
                   <TableCell>Phone</TableCell>
                   <TableCell>Address</TableCell>
@@ -153,9 +208,9 @@ function Report() {
               </TableHead>
               <TableBody>
                 {filteredData.length > 0 ? (
-                  filteredData.map((item) => (
-                    <TableRow key={item.id || item._id}>
-                      <TableCell>{item.id}</TableCell>
+                  paginatedData.map((item, index) => (
+                    <TableRow key={item.id}>
+                      <TableCell>{page * rowsPerPage + index + 1}</TableCell>
                       <TableCell>{item.name || "N/A"}</TableCell>
                       <TableCell>{item.number || "N/A"}</TableCell>
                       <TableCell>{item.address || "N/A"}</TableCell>
@@ -175,9 +230,49 @@ function Report() {
             </Table>
           </TableContainer>
 
-          {/* Download Button */}
           <div>
             <Button
+              variant="contained"
+              color="primary"
+              onClick={generatePDF}
+              style={{
+                marginTop: "20px",
+                display: "block",
+                marginRight: "auto",
+                width: "200px",
+              }}
+            >
+              Preview PDF
+            </Button>
+
+          </div>
+
+          <TablePagination
+            rowsPerPageOptions={[10, 20, 30]}
+            component="div"
+            count={filteredData.length}
+            page={page}
+            rowsPerPage={rowsPerPage}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleRowsPerPageChange}
+          />
+        </div>
+      )}
+        <Dialog open={openPreview} onClose={() => setOpenPreview(false)} maxWidth="lg" fullWidth>
+            <DialogTitle>PDF Preview</DialogTitle>
+            <DialogContent>
+              <iframe
+                title="PDF Preview"
+                src={pdfUrl}
+                width="100%"
+                height="700px"
+                style={{ border: "none" }}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setOpenPreview(false)} color="primary">
+                Close
+              </Button>        <Button
               variant="contained"
               color="primary"
               onClick={downloadPDF}
@@ -190,9 +285,8 @@ function Report() {
             >
               Download as PDF
             </Button>
-          </div>
-        </div>
-      )}
+            </DialogActions>
+          </Dialog>
     </div>
   );
 }

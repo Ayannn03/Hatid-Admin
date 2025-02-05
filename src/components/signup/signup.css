@@ -1,21 +1,68 @@
-.signup{
-    background-color: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    text-align: center;
-    height: 600px;
-    margin-top: 50px;
-    border-radius: 8px;
-    width: 40%;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+.login-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-image: url('./logo.png');
+  background-size: 65% auto; /* Ensures the image covers the container */
+  background-position: center top; /* Centers the image horizontally and shifts it to the top */
+  background-repeat: no-repeat;
 }
 
-.log{
-    display: flex;
-    justify-content: center;
+
+.wrapper {
+  background: rgba(255, 255, 255, 0.8); /* Light background for contrast */
+  padding: 30px;
+  border-radius: 10px; /* Optional rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+  text-align: center;
+  width: 100%;
+  max-width: 400px; /* Limit the width of the form */
 }
 
-.chart{
-    width: 20%;
+h1 {
+  margin-bottom: 20px;
+}
+
+.input-box {
+  position: relative;
+  margin: 20px 0;
+}
+
+.input-box input {
+  width: 100%;
+  padding: 10px;
+  padding-left: 30px; /* Add padding to make space for the icon */
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.input-box svg {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+}
+
+.login {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  background-color: #4CAF50;
+  color: white;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+
+.forgot {
+  margin-top: 15px;
+}
+
+.forgot label {
+  font-size: 14px;
+  color: #333;
 }

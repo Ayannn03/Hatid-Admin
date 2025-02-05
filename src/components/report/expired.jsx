@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import axios from "axios";
-import moment from "moment";
+import TabBar from "../tab-bar/tabBar";
 import {
   Table,
   TableBody,
@@ -9,33 +9,52 @@ import {
   TableHead,
   TableRow,
   Paper,
+  CircularProgress,
   Button,
   TablePagination,
-  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import moment from "moment";
 import "./driverReport.css";
-import TabBar from "../tab-bar/tabBar";
 
-const API_URL =
-  "https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/subs/subscription/";
+const DRIVER_API_URL =
+  "https://serverless-api-hatid-5.onrender.com/.netlify/functions/api/driver/approved-drivers";
 
-const ExpiredSubs = () => {
+function Report() {
   const [data, setData] = useState([]);
-  const [nameSearch, setNameSearch] = useState("");
-  const [page, setPage] = useState(0); // Pagination: Current page
-  const [rowsPerPage, setRowsPerPage] = useState(10); // Pagination: Rows per page
+  const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [vehicleFilter, setVehicleFilter] = useState("");
+  const [error, setError] = useState(null);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [openPreview, setOpenPreview] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState(""); // To store the PDF URL for preview
 
-  // Fetch data from the API
+  // Fetch driver data from API
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.get(API_URL);
-      setData(response.data);
+      const driverResponse = await axios.get(DRIVER_API_URL);
+      const driverData = driverResponse.data;
+      const sortedData = driverData
+        .map((driver, index) => ({
+          ...driver,
+          id: index + 1,
+          vehicleInfo: driver.vehicleInfo2,
+        }))
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      setData(sortedData);
+      setFilteredData(sortedData);
+      setError(null);
     } catch (error) {
       console.error("Error fetching data:", error);
+      setError("Error fetching data");
     } finally {
       setLoading(false);
     }
@@ -45,118 +64,154 @@ const ExpiredSubs = () => {
     fetchData();
   }, [fetchData]);
 
-  // Filter expired subscriptions for tricycles and jeeps
-  const filteredData = useMemo(() => {
-    return data.filter(
-      (item) =>
-        (item.vehicleType.toLowerCase() === "jeep" ||
-          item.vehicleType.toLowerCase() === "tricycle") &&
-        moment().isAfter(item.endDate) &&
-        item.driver.toLowerCase().includes(nameSearch.toLowerCase())
-    );
-  }, [data, nameSearch]);
-
-  // Paginate data for the current page
-  const paginatedData = useMemo(() => {
-    const start = page * rowsPerPage;
-    const end = start + rowsPerPage;
-    return filteredData.slice(start, end);
-  }, [filteredData, page, rowsPerPage]);
-
-  const handleSearch = (e) => {
-    setNameSearch(e.target.value);
+  // Filter by vehicle type
+  const handleVehicleFilterChange = (e) => {
+    const selectedVehicle = e.target.value;
+    setVehicleFilter(selectedVehicle);
+    if (selectedVehicle) {
+      setFilteredData(
+        data.filter(
+          (item) =>
+            item.vehicleInfo?.vehicleType?.toLowerCase() ===
+            selectedVehicle.toLowerCase()
+        )
+      );
+    } else {
+      setFilteredData(data);
+    }
   };
 
-  const handleDownloadPDF = () => {
+  // Pagination handlers
+  const handleChangePage = (event, newPage) => setPage(newPage);
+  const handleRowsPerPageChange = (event) => {
+    setRowsPerPage(+event.target.value);
+    setPage(0);
+  };
+
+  const paginatedData = useMemo(() => {
+    return filteredData.slice(
+      page * rowsPerPage,
+      page * rowsPerPage + rowsPerPage
+    );
+  }, [filteredData, page, rowsPerPage]);
+
+  // Generate PDF for preview
+  const generatePDF = () => {
     const doc = new jsPDF();
-
-    // Add title
     doc.setFontSize(16);
-    doc.text("Expired Subscriptions Report", 14, 20);
+    doc.text("Approved Drivers Report", 14, 20);
 
-    // Generate table
     const tableData = filteredData.map((item, index) => [
-      item.id || index + 1,
-      item.driver,
-      item.vehicleType,
-      item.subscriptionType,
-      moment(item.endDate).format("MMMM DD, YYYY"),
+      page * rowsPerPage + index + 1,
+      item.name || "N/A",
+      item.number || "N/A",
+      item.address || "N/A",
+      item.vehicleInfo?.vehicleType || "N/A",
     ]);
 
     doc.autoTable({
-      head: [["ID", "Driver", "Vehicle Type", "Subscription Type", "End Date"]],
+      head: [["Number", "Name", "Phone", "Address", "Vehicle Info"]],
       body: tableData,
       startY: 30,
       styles: { fontSize: 10 },
-      headStyles: { fillColor: [22, 160, 133] }, // Teal color for headers
+      headStyles: { fillColor: [22, 160, 133] },
       margin: { left: 14, right: 14 },
     });
 
-    // Save PDF
-    doc.save("Expired_Subscriptions_Report.pdf");
+    const pdfDataUrl = doc.output("dataurlstring");
+    setPdfUrl(pdfDataUrl);
+    setOpenPreview(true);
   };
 
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage); // Update the page number
-  };
+  // Download PDF
+  const downloadPDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text("Approved Drivers Report", 14, 20);
 
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10)); // Update rows per page
-    setPage(0); // Reset to the first page
+    const tableData = filteredData.map((item, index) => [
+      page * rowsPerPage + index + 1,
+      item.name || "N/A",
+      item.number || "N/A",
+      item.address || "N/A",
+      item.vehicleInfo?.vehicleType || "N/A",
+    ]);
+
+    doc.autoTable({
+      head: [["Number", "Name", "Phone", "Address", "Vehicle Info"]],
+      body: tableData,
+      startY: 30,
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [22, 160, 133] },
+      margin: { left: 14, right: 14 },
+    });
+
+    doc.save("Approved_Drivers_Report.pdf");
   };
 
   return (
     <div>
+      <TabBar />
       {loading ? (
-        <CircularProgress
-          sx={{ display: "block", margin: "auto", marginTop: 4 }}
-        />
+        <CircularProgress sx={{ display: "block", margin: "auto", marginTop: 4 }} />
+      ) : error ? (
+        <p style={{ textAlign: "center", color: "red" }}>{error}</p>
       ) : (
         <div className="report-main-content">
-          {/* Report Header */}
           <div className="report-top-bar">
-            <h1>Expired Subscription List</h1>
+            <h1>Drivers List Report</h1>
+            <select
+              value={vehicleFilter}
+              onChange={handleVehicleFilterChange}
+              className="vehicle-dropdown"
+              style={{
+                marginLeft: "20px",
+                padding: "5px",
+                fontSize: "16px",
+              }}
+            >
+              <option value="">All Vehicles</option>
+              <option value="Jeep">Jeep</option>
+              <option value="Tricycle">Tricycle</option>
+            </select>
           </div>
-
-          {/* Table with pagination */}
           <TableContainer
             component={Paper}
             sx={{
-              width: "100%",
-              margin: "20px auto",
+              marginTop: -2,
+              maxHeight: 685,
+              marginLeft: -2,
+              maxWidth: "100%",
               boxShadow: "0 2px 10px rgba(0, 0, 0, 0.3)",
             }}
-            className="table-container"
           >
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>ID</TableCell>
-                  <TableCell>Driver</TableCell>
-                  <TableCell>Vehicle Type</TableCell>
-                  <TableCell>Subscription Type</TableCell>
-                  <TableCell>End Date</TableCell>
+                  <TableCell>Number</TableCell>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Phone</TableCell>
+                  <TableCell>Address</TableCell>
+                  <TableCell>Vehicle Info</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {paginatedData.length > 0 ? (
+                {filteredData.length > 0 ? (
                   paginatedData.map((item, index) => (
-                    <TableRow key={item.id || `${page}-${index}`}>
+                    <TableRow key={item.id}>
+                      <TableCell>{page * rowsPerPage + index + 1}</TableCell>
+                      <TableCell>{item.name || "N/A"}</TableCell>
+                      <TableCell>{item.number || "N/A"}</TableCell>
+                      <TableCell>{item.address || "N/A"}</TableCell>
                       <TableCell>
-                        {item.id || index + 1 + page * rowsPerPage}
-                      </TableCell>
-                      <TableCell>{item.driver}</TableCell>
-                      <TableCell>{item.vehicleType}</TableCell>
-                      <TableCell>{item.subscriptionType}</TableCell>
-                      <TableCell>
-                        {moment(item.endDate).format("MMMM DD, YYYY")}
+                        {item.vehicleInfo?.vehicleType || "N/A"}
                       </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
                     <TableCell colSpan={5} align="center">
-                      No Expired Subscribers Found.
+                      No Approved Drivers Found.
                     </TableCell>
                   </TableRow>
                 )}
@@ -164,38 +219,66 @@ const ExpiredSubs = () => {
             </Table>
           </TableContainer>
 
-          {/* Download Button */}
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleDownloadPDF}
-            style={{
-              marginTop: "20px",
-              display: "block",
-              marginRight: "auto",
-              width: "200px",
-            }}
-          >
-            Download as PDF
-          </Button>
+          <div>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={generatePDF}
+              style={{
+                marginTop: "20px",
+                display: "block",
+                marginRight: "auto",
+                width: "200px",
+              }}
+            >
+              Preview PDF
+            </Button>
+          </div>
 
-          {/* Pagination Component */}
           <TablePagination
+            rowsPerPageOptions={[10, 20, 30]}
             component="div"
-            count={filteredData.length} // Total rows count
-            page={page} // Current page
-            onPageChange={handleChangePage} // Handler for page change
-            rowsPerPage={rowsPerPage} // Rows per page
-            onRowsPerPageChange={handleChangeRowsPerPage} // Handler for rows per page change
-            rowsPerPageOptions={[5, 10, 20]} // Options for rows per page
+            count={filteredData.length}
+            page={page}
+            rowsPerPage={rowsPerPage}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleRowsPerPageChange}
           />
         </div>
       )}
 
-      {/* TabBar */}
-      <TabBar />
+      {/* PDF Preview Modal */}
+      <Dialog open={openPreview} onClose={() => setOpenPreview(false)}>
+        <DialogTitle>PDF Preview</DialogTitle>
+        <DialogContent>
+          <iframe
+            src={pdfUrl}
+            width="100%"
+            height="500px"
+            title="PDF Preview"
+          ></iframe>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenPreview(false)} color="primary">
+            Close
+          </Button>
+          <Button
+              variant="contained"
+              color="primary"
+              onClick={downloadPDF}
+              style={{
+                marginTop: "20px",
+                display: "block",
+                marginRight: "auto",
+                width: "200px",
+              }}
+            >
+              Download as PDF
+            </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
-};
+}
 
-export default ExpiredSubs;
+export default Report;

@@ -2,23 +2,26 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-between;
   width: 100%;
-  padding: 25px ;
+  padding: 20px ;
   background-color: white;
 }
 
+
+
 .subs-main-content{
   margin-left: 40px;
+  margin-top: -20px;
 }
 
 .sort-container-subs select {
   padding: 12px;
   cursor: pointer;
   border-radius: 5px;
+  margin-right: 40px;
   font-size: 14px;
-  margin-left: 450px;
   border: 1px solid #ccc;
-
 }
-
+.sort-container-subs{
+  margin-left:350px;
+}

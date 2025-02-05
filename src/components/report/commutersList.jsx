@@ -11,6 +11,10 @@ import {
   CircularProgress,
   TablePagination,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle
 } from "@mui/material";
 import "./driverReport.css";
 import jsPDF from "jspdf";
@@ -25,6 +29,12 @@ const Commuters = () => {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [openPreview, setOpenPreview] = useState(false); // State to control preview modal
+  const [pdfUrl, setPdfUrl] = useState(""); 
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   useEffect(() => {
     fetchData();
@@ -34,11 +44,17 @@ const Commuters = () => {
     setLoading(true);
     try {
       const response = await axios.get(API_URL);
-      const sortedData = response.data
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Sort by createdAt in descending order
+      const dataWithId = response.data.map((item, index) => ({
+        ...item,
+        id: index + 1,
+        createdAt: new Date(item.createdAt), // Ensure createdAt is a Date object
+      }));
+  
+      // Sort data by `createdAt` field in descending order
+      const sortedData = dataWithId.sort((a, b) => b.createdAt - a.createdAt);
   
       setData(sortedData);
-      setError(null); // Clear error if data is fetched successfully
+      setError(null);
     } catch (error) {
       console.error("Error fetching data:", error);
       setError("Error fetching data");
@@ -46,6 +62,7 @@ const Commuters = () => {
       setLoading(false);
     }
   };
+  
   
 
   const filteredData = useMemo(() => {
@@ -68,13 +85,47 @@ const Commuters = () => {
     setPage(0);
   };
 
+  
+  const generatePDF = () => {
+    const doc = new jsPDF();
+
+    // Add title to the PDF
+    doc.setFontSize(16);
+    doc.text("Approved Drivers Report", 14, 20);
+
+    // Prepare table data
+    const tableData = filteredData.map((item, index) => [
+      page * rowsPerPage + index + 1,
+      item.name || "N/A",
+      item.number || "N/A",
+      item.address || "N/A",
+      item.vehicleInfo?.vehicleType || "N/A",
+    ]);
+
+    // Add the table to the PDF
+    doc.autoTable({
+      head: [["Number", "Name", "Phone", "Address", "Vehicle Info"]],
+      body: tableData,
+      startY: 30,
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [22, 160, 133] }, // Teal header color
+      margin: { left: 14, right: 14 },
+    });
+
+    // Generate PDF as a data URL for preview
+    const pdfDataUrl = doc.output("dataurlstring");
+    setPdfUrl(pdfDataUrl); // Set the PDF data URL to preview
+    setOpenPreview(true); // Open preview modal
+  };
+
+
   const handleDownloadPDF = () => {
     const doc = new jsPDF();
     doc.setFontSize(16);
     doc.text("Commuters Report", 14, 20);
 
     const tableData = filteredData.map((item) => [
-      item.id,
+      page * rowsPerPage + index + 1,
       item.name || "N/A",
       item.email || "N/A",
       item.number || "N/A",
@@ -82,7 +133,7 @@ const Commuters = () => {
     ]);
 
     doc.autoTable({
-      head: [["ID", "Name", "Email", "Phone", "Address"]],
+      head: [["Number", "Name", "Email", "Phone", "Address"]],
       body: tableData,
       startY: 30,
       styles: { fontSize: 10 },
@@ -92,6 +143,7 @@ const Commuters = () => {
 
     doc.save("Commuters_Report.pdf");
   };
+
 
   return (
     <div className="subs-main-content">
@@ -124,10 +176,10 @@ const Commuters = () => {
               </TableBody>
             </Table>
           ) : (
-            <Table sx={{ "& .MuiTableCell-root": { padding: "15px" } }}>
+            <Table sx={{ "& .MuiTableCell-root": { padding: "13px" } }}>
               <TableHead>
                 <TableRow>
-                  <TableCell>ID</TableCell>
+                  <TableCell>number</TableCell>
                   <TableCell>Name</TableCell>
                   <TableCell>Email</TableCell>
                   <TableCell>Phone</TableCell>
@@ -135,9 +187,9 @@ const Commuters = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {paginatedData.map((item) => (
+                {paginatedData.map((item, index) => (
                   <TableRow key={item.id}>
-                    <TableCell>{item.id}</TableCell>
+                    <TableCell>{page * rowsPerPage + index + 1}</TableCell>
                     <TableCell>{item.name || "N/A"}</TableCell>
                     <TableCell>{item.email || "N/A"}</TableCell>
                     <TableCell>{item.number || "N/A"}</TableCell>
@@ -148,21 +200,19 @@ const Commuters = () => {
             </Table>
           )}
         </TableContainer>
-
         <Button
-          variant="contained"
-          color="primary"
-          onClick={handleDownloadPDF}
-          style={{
-            marginTop: "20px",
-            display: "block",
-            marginLeft: "220px",
-            marginRight: "auto",
-            width: "200px",
-          }}
-        >
-          Download as PDF
-        </Button>
+              variant="contained"
+              color="primary"
+              onClick={generatePDF}
+              style={{
+                marginTop: "20px",
+                display: "block",
+                marginLeft: "220px",
+                width: "200px",
+              }}
+            >
+              Preview PDF
+            </Button>
 
         <TablePagination
           rowsPerPageOptions={[10, 20, 30]}
@@ -175,6 +225,37 @@ const Commuters = () => {
         />
         {error && <div className="error-message">{error}</div>}
       </div>
+      <Dialog open={openPreview} onClose={() => setOpenPreview(false)} maxWidth="lg" fullWidth>
+            <DialogTitle>PDF Preview</DialogTitle>
+            <DialogContent>
+              <iframe
+                title="PDF Preview"
+                src={pdfUrl}
+                width="100%"
+                height="700px"
+                style={{ border: "none" }}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setOpenPreview(false)} color="primary">
+                Close
+              </Button>
+              
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleDownloadPDF}
+          style={{
+            marginTop: "5px",
+            display: "block",
+            marginLeft: "220px",
+            width: "200px",
+          }}
+        >
+          Download as PDF
+        </Button>
+            </DialogActions>
+          </Dialog>
       <TabBar />
     </div>
   );

@@ -1,6 +1,5 @@
-/* Global Styles */
 * {
-  box-sizing: border-box;
+  box-sizing: border-box; 
   margin: 0;
   padding: 0;
 }
@@ -10,25 +9,23 @@ body {
   overflow-x: hidden;
 }
 
-/* Commuter Top Bar */
 .commuter-top-bar {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 25px;
+  padding: 20px;
   background-color: white;
 }
 
-/* Main Content */
+
 .commuters-main-content {
   width: 100%;
   padding-left: 140px;
   box-sizing: border-box;
 }
 
-/* Buttons */
 .edit-button, .delete-button, .view-button {
   margin: 0 5px;
   padding: 5px 10px;
@@ -52,11 +49,10 @@ body {
   border: 1px solid lightgray;
 }
 
-.view-button:hover {
+.view-button:hover{
   background-color: whitesmoke;
 }
 
-/* Loading & Error Messages */
 .loading {
   text-align: center;
   font-size: 18px;
@@ -71,7 +67,6 @@ body {
   margin-top: 20px;
 }
 
-/* Modal */
 .modal {
   border-radius: 8px;
   background: #64b5f6;
@@ -105,13 +100,6 @@ body {
   padding: 20px;
 }
 
-/* Profile Details */
-.profile-title {
-  font-size: 24px;
-  padding: 10px 0;
-  text-align: center;
-}
-
 .user-details {
   display: flex;
   margin-top: -80px;
@@ -121,11 +109,11 @@ body {
   margin-left: 100px;
   height: 500px;
   background-color: rgba(255, 255, 255, 0.3); 
-  border-radius: 5px;
-  padding: 12px;
+ border-radius: 5px;
+ padding: 12px;
 }
 
-.user-details p {
+.user-details p{
   margin-top: 10px;
   height: 500px;
   width: 400px;
@@ -133,7 +121,12 @@ body {
   border-radius: 5px;
 }
 
-/* Profile Image */
+.profile-title {
+  font-size: 24px;
+  padding: 10px 0;
+  text-align: center;
+}
+
 .commuter-profile-image {
   display: flex;
   position: fixed;
@@ -142,12 +135,11 @@ body {
   height: 78%;
   margin-top: -50px;
   background-color: rgba(255, 255, 255, 0.3); 
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  padding: 0 10px;
+  box-shadow:  0 2px 10px rgba(0, 0, 0, 0.2);
+   padding: 0 10px 0 10px ;
   border-radius: 5px;
 }
-
-.commuter-image {
+.commuter-image{
   height: 480px;
   width: 170px;
   border-radius: 5px;
@@ -155,12 +147,24 @@ body {
   background-color: white;
 }
 
-.commuter-profile-image p {
+
+.commuter-profile-image p{
   margin-left: 5px;
 }
 
-/* Profile Container */
-.profile-container {
+
+
+
+.close {
+  cursor: pointer;
+  align-self: flex-end;
+  margin-right: 10px;
+  font-size: 24px;
+  background: none;
+  border: none;
+}
+
+.profile-container{
   display: flex;
   margin-top: 120px;
   position: fixed;
@@ -171,14 +175,21 @@ body {
   font-size: 16px;
 }
 
-.profile-container p {
+.profile-container p{
   padding: 12px;
   border-radius: 5px;
   color: black;
 }
 
-/* Profile Image and Details Styling */
-.commuter-profile-image img {
+.commuter-profile-image{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-top: -80px;
+  margin-left: -100px;
+  
+}
+.commuter-profile-image img{
   width: 140px;
   height: 140px;
   border-radius: 50%;
@@ -188,12 +199,34 @@ body {
   margin-bottom: 20px;
 }
 
-/* Close Button */
-.close {
-  cursor: pointer;
-  align-self: flex-end;
-  margin-right: 10px;
-  font-size: 24px;
-  background: none;
-  border: none;
+.commuters-preview-modal{
+  border-radius: 8px;
+  background: #64b5f6;
+  display: flex;
+  position: fixed;
+  width: 40%;
+  height: 80%;
+  z-index: 9999;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.commuters-preview-modal-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+ 
+}
+
+.commuters-image-preview-container {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin-left: 20px;
+  
 }
